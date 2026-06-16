@@ -6,25 +6,26 @@ import { RatioTable } from "./components/RatioTable";
 import { detectFaceLandmarks } from "./lib/mediapipe";
 import { computeRatios } from "./lib/ratios";
 import { extractKeyPoints } from "./lib/keyPoints";
+import { DIAGRAMS } from "./lib/measurementDiagram";
 import type { KeyPointPositions } from "./lib/keyPoints";
 import type { RatioResult } from "./lib/ratios";
 import type { Landmarks } from "./lib/landmarks";
-import { RefreshCw, AlertCircle, Crosshair, Eye } from "lucide-react";
+import { RefreshCw, AlertCircle, Crosshair } from "lucide-react";
 
 const queryClient = new QueryClient();
-
 type AppState = "idle" | "loading" | "done" | "error";
 
 function FaceAnalyzer() {
-  const [state, setState] = useState<AppState>("idle");
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [imageW, setImageW] = useState(0);
-  const [imageH, setImageH] = useState(0);
+  const [state, setState]         = useState<AppState>("idle");
+  const [imageUrl, setImageUrl]   = useState<string | null>(null);
+  const [imageW, setImageW]       = useState(0);
+  const [imageH, setImageH]       = useState(0);
   const [landmarks, setLandmarks] = useState<Landmarks | null>(null);
   const [keyPoints, setKeyPoints] = useState<KeyPointPositions | null>(null);
-  const [results, setResults] = useState<RatioResult[]>([]);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [editMode, setEditMode] = useState(false);
+  const [results, setResults]     = useState<RatioResult[]>([]);
+  const [errorMsg, setErrorMsg]   = useState("");
+  const [editMode, setEditMode]   = useState(false);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   const handleImage = useCallback(async (file: File) => {
     const url = URL.createObjectURL(file);
@@ -34,6 +35,7 @@ function FaceAnalyzer() {
     setResults([]);
     setErrorMsg("");
     setEditMode(false);
+    setSelectedKey(null);
     setState("loading");
 
     const img = new Image();
@@ -53,10 +55,9 @@ function FaceAnalyzer() {
           detection.imageWidth,
           detection.imageHeight,
         );
-        const ratioResults = computeRatios(kp);
         setLandmarks(detection.landmarks);
         setKeyPoints(kp);
-        setResults(ratioResults);
+        setResults(computeRatios(kp));
         setState("done");
       } catch (err) {
         console.error(err);
@@ -64,10 +65,7 @@ function FaceAnalyzer() {
         setState("error");
       }
     };
-    img.onerror = () => {
-      setErrorMsg("Could not load the image.");
-      setState("error");
-    };
+    img.onerror = () => { setErrorMsg("Could not load the image."); setState("error"); };
   }, []);
 
   const handlePointsChange = useCallback((updated: KeyPointPositions) => {
@@ -75,20 +73,27 @@ function FaceAnalyzer() {
     setResults(computeRatios(updated));
   }, []);
 
+  const handleSelect = useCallback((key: string | null) => {
+    setSelectedKey(key);
+    if (key) setEditMode(false); // switch off edit mode when viewing a diagram
+  }, []);
+
+  const handleEditToggle = () => {
+    setEditMode((v) => !v);
+    if (!editMode) setSelectedKey(null); // clear diagram when entering edit mode
+  };
+
   const reset = () => {
-    setImageUrl(null);
-    setLandmarks(null);
-    setKeyPoints(null);
-    setResults([]);
-    setErrorMsg("");
-    setEditMode(false);
+    setImageUrl(null); setLandmarks(null); setKeyPoints(null);
+    setResults([]); setErrorMsg(""); setEditMode(false); setSelectedKey(null);
     setState("idle");
   };
 
-  const overallScore =
-    results.length > 0
-      ? (results.filter((r) => r.score === "ideal").length / results.length) * 100
-      : 0;
+  const overallScore = results.length > 0
+    ? (results.filter((r) => r.score === "ideal").length / results.length) * 100
+    : 0;
+
+  const activeDiagram = selectedKey ? (DIAGRAMS[selectedKey] ?? null) : null;
 
   return (
     <div className="app">
@@ -105,9 +110,8 @@ function FaceAnalyzer() {
             <div className="header-actions">
               <button
                 className={`edit-btn ${editMode ? "edit-btn--active" : ""}`}
-                onClick={() => setEditMode((v) => !v)}
+                onClick={handleEditToggle}
                 type="button"
-                title="Adjust landmark points"
               >
                 <Crosshair size={14} />
                 {editMode ? "Done Adjusting" : "Adjust Points"}
@@ -128,13 +132,14 @@ function FaceAnalyzer() {
             <div className="idle-info">
               <h3>How it works</h3>
               <ol>
-                <li>Upload a frontal photo — your device's camera or Photos app</li>
+                <li>Upload a frontal photo — your device camera or Photos app</li>
                 <li>AI detects 478 facial landmarks entirely in your browser</li>
-                <li>24 facial ratios are calculated and compared to research-based ideals</li>
-                <li>Drag any landmark point to correct it if the AI placed it slightly off</li>
+                <li>24 ratios are calculated and compared to research-based ideal ranges</li>
+                <li>Tap any ratio card to see its measurement lines drawn on the photo</li>
+                <li>Use "Adjust Points" to drag any landmark that landed in the wrong place</li>
               </ol>
               <p className="idle-info__disclaimer">
-                All processing happens locally in your browser. No photo is ever uploaded to a server.
+                All processing happens locally. No photo is ever uploaded to a server.
               </p>
             </div>
           </div>
@@ -143,29 +148,21 @@ function FaceAnalyzer() {
         {state === "loading" && (
           <div className="loading-layout">
             <div className="loading-card">
-              {imageUrl && (
-                <img src={imageUrl} className="loading-preview" alt="Analyzing..." />
-              )}
+              {imageUrl && <img src={imageUrl} className="loading-preview" alt="Analyzing..." />}
               <div className="loading-spinner" />
               <p className="loading-text">Detecting landmarks&hellip;</p>
-              <p className="loading-sub">
-                First run downloads the AI model (~6 MB) — subsequent photos are instant
-              </p>
+              <p className="loading-sub">First run downloads the AI model (~6 MB) — subsequent photos are instant</p>
             </div>
           </div>
         )}
 
         {state === "error" && (
           <div className="error-layout">
-            {imageUrl && (
-              <img src={imageUrl} className="error-preview" alt="Failed" />
-            )}
+            {imageUrl && <img src={imageUrl} className="error-preview" alt="Failed" />}
             <div className="error-card">
               <AlertCircle size={28} className="error-icon" />
               <p className="error-msg">{errorMsg}</p>
-              <button className="upload-zone__btn" onClick={reset}>
-                Try Another Photo
-              </button>
+              <button className="upload-zone__btn" onClick={reset}>Try Another Photo</button>
             </div>
           </div>
         )}
@@ -176,7 +173,19 @@ function FaceAnalyzer() {
               {editMode && (
                 <div className="edit-hint">
                   <Crosshair size={13} />
-                  Drag any colored dot to correct its position — ratios update instantly
+                  Drag any colored dot to correct it — ratios update instantly
+                </div>
+              )}
+              {selectedKey && activeDiagram && (
+                <div className="diagram-hint">
+                  <span className="diagram-hint__key">{selectedKey.toUpperCase()}</span>
+                  {activeDiagram.formulaParts.map((p, i) => {
+                    let style: React.CSSProperties = {};
+                    if (p.role === "numerator") style.color = "#c9a96e";
+                    else if (p.role === "denominator") style.color = "#60a5fa";
+                    else if (p.role === "angle") style.color = "#a78bfa";
+                    return <span key={i} style={style}>{p.text}</span>;
+                  })}
                 </div>
               )}
               <PointCanvas
@@ -186,11 +195,18 @@ function FaceAnalyzer() {
                 imageWidth={imageW}
                 imageHeight={imageH}
                 editMode={editMode}
+                activeDiagram={activeDiagram}
                 onPointsChange={handlePointsChange}
               />
             </div>
             <div className="done-right">
-              <RatioTable results={results} overallScore={overallScore} />
+              <RatioTable
+                results={results}
+                overallScore={overallScore}
+                selectedKey={selectedKey}
+                onSelect={handleSelect}
+                diagrams={DIAGRAMS}
+              />
             </div>
           </div>
         )}

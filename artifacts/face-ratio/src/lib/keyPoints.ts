@@ -16,6 +16,7 @@ export type PointKey =
   | "r_pupil" | "l_pupil"
   | "alar_r" | "alar_l"
   | "nose_w_r" | "nose_w_l"
+  | "subnasale"
   | "upper_lip_top" | "upper_lip_in"
   | "lower_lip_in" | "lower_lip_bot"
   | "mouth_r" | "mouth_l";
@@ -56,6 +57,7 @@ export const KEY_POINT_DEFS: Record<PointKey, PointDef> = {
   alar_l:        { label: "Alar Base L",    group: "nose",     color: "#fbbf24", description: "Left alar base of nose" },
   nose_w_r:      { label: "Nose Width R",   group: "nose",     color: "#fbbf24", description: "Widest right point of nose" },
   nose_w_l:      { label: "Nose Width L",   group: "nose",     color: "#fbbf24", description: "Widest left point of nose" },
+  subnasale:     { label: "Subnasale",      group: "nose",     color: "#fbbf24", description: "Bottom center of nose — nose/philtrum junction" },
   upper_lip_top: { label: "Upper Lip Top",  group: "mouth",    color: "#f472b6", description: "Top of upper lip (philtrum base)" },
   upper_lip_in:  { label: "Stomion Top",    group: "mouth",    color: "#f472b6", description: "Inner upper lip / stomion top" },
   lower_lip_in:  { label: "Stomion Bot",    group: "mouth",    color: "#f472b6", description: "Inner lower lip / stomion bottom" },
@@ -116,6 +118,7 @@ export function extractKeyPoints(
     alar_l:        p(LM.ALAR_L),
     nose_w_r:      p(LM.NOSE_W_R),
     nose_w_l:      p(LM.NOSE_W_L),
+    subnasale:     p(LM.SUBNASALE),
     upper_lip_top: p(LM.UPPER_LIP_TOP),
     upper_lip_in:  p(LM.UPPER_LIP_IN),
     lower_lip_in:  p(LM.LOWER_LIP_IN),

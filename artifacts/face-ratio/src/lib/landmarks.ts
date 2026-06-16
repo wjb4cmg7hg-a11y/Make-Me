@@ -49,6 +49,9 @@ export const LM = {
   // Ear approximations (face edge)
   EAR_R: 127,
   EAR_L: 356,
+
+  // Subnasale — bottom center of nose / nose-to-philtrum junction
+  SUBNASALE: 2,
 } as const;
 
 export type Landmark = { x: number; y: number; z: number };
