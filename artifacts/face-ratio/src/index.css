@@ -406,3 +406,61 @@ body {
 .ratio-card__desc {
   font-size: 0.72rem; color: var(--text-muted); line-height: 1.45; margin-top: 2px;
 }
+
+/* ─── Header actions ──────────────────────────────────────────── */
+.header-actions {
+  display: flex; gap: 8px; align-items: center;
+}
+
+.edit-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--gold-dim);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--gold-dim);
+  font-size: 0.8rem; font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.edit-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--gold-faint);
+}
+
+.edit-btn--active {
+  background: var(--gold-faint);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* ─── Edit hint ───────────────────────────────────────────────── */
+.edit-hint {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 14px;
+  margin-bottom: 10px;
+  background: var(--gold-faint);
+  border: 1px solid var(--gold-dim);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  color: var(--gold);
+}
+
+/* ─── Canvas legend ───────────────────────────────────────────── */
+.canvas-legend {
+  display: flex; flex-wrap: wrap; gap: 10px 16px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+
+.canvas-legend__item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.72rem; color: var(--text-dim);
+}
+
+.canvas-legend__dot {
+  width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+}
