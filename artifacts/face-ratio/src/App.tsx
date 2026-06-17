@@ -1,13 +1,15 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UploadZone } from "./components/UploadZone";
 import { PointCanvas } from "./components/PointCanvas";
+import { NudgePanel } from "./components/NudgePanel";
 import { RatioTable } from "./components/RatioTable";
 import { detectFaceLandmarks } from "./lib/mediapipe";
 import { computeRatios } from "./lib/ratios";
 import { extractKeyPoints } from "./lib/keyPoints";
 import { DIAGRAMS } from "./lib/measurementDiagram";
-import type { KeyPointPositions } from "./lib/keyPoints";
+import type { KeyPointPositions, PointKey } from "./lib/keyPoints";
+import type { Point } from "./lib/geometry";
 import type { RatioResult } from "./lib/ratios";
 import type { Landmarks } from "./lib/landmarks";
 import { RefreshCw, AlertCircle, Crosshair } from "lucide-react";
@@ -25,7 +27,19 @@ function FaceAnalyzer() {
   const [results, setResults]     = useState<RatioResult[]>([]);
   const [errorMsg, setErrorMsg]   = useState("");
   const [editMode, setEditMode]   = useState(false);
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [selectedRatioKey, setSelectedRatioKey] = useState<string | null>(null);
+  const [selectedEditKey, setSelectedEditKey]   = useState<PointKey | null>(null);
+
+  // Track original positions before user edits them — persists within a session
+  const originalPositions = useRef<Partial<Record<PointKey, Point>>>({});
+  const movedKeys = useRef<Set<PointKey>>(new Set());
+
+  const saveOriginal = useCallback((key: PointKey, kp: KeyPointPositions) => {
+    if (!movedKeys.current.has(key)) {
+      originalPositions.current[key] = { ...kp[key] };
+      movedKeys.current.add(key);
+    }
+  }, []);
 
   const handleImage = useCallback(async (file: File) => {
     const url = URL.createObjectURL(file);
@@ -35,7 +49,10 @@ function FaceAnalyzer() {
     setResults([]);
     setErrorMsg("");
     setEditMode(false);
-    setSelectedKey(null);
+    setSelectedRatioKey(null);
+    setSelectedEditKey(null);
+    originalPositions.current = {};
+    movedKeys.current = new Set();
     setState("loading");
 
     const img = new Image();
@@ -50,11 +67,7 @@ function FaceAnalyzer() {
           setState("error");
           return;
         }
-        const kp = extractKeyPoints(
-          detection.landmarks,
-          detection.imageWidth,
-          detection.imageHeight,
-        );
+        const kp = extractKeyPoints(detection.landmarks, detection.imageWidth, detection.imageHeight);
         setLandmarks(detection.landmarks);
         setKeyPoints(kp);
         setResults(computeRatios(kp));
@@ -68,24 +81,70 @@ function FaceAnalyzer() {
     img.onerror = () => { setErrorMsg("Could not load the image."); setState("error"); };
   }, []);
 
+  // Called when a drag begins — save original before any movement
+  const handleDragStart = useCallback((key: PointKey) => {
+    if (keyPoints) saveOriginal(key, keyPoints);
+  }, [keyPoints, saveOriginal]);
+
+  // Called when drag completes or nudge fires
   const handlePointsChange = useCallback((updated: KeyPointPositions) => {
     setKeyPoints(updated);
     setResults(computeRatios(updated));
   }, []);
 
-  const handleSelect = useCallback((key: string | null) => {
-    setSelectedKey(key);
-    if (key) setEditMode(false); // switch off edit mode when viewing a diagram
+  // Nudge the selected point by dx/dy (in original image pixel units)
+  const handleNudge = useCallback((dx: number, dy: number) => {
+    if (!selectedEditKey || !keyPoints) return;
+    saveOriginal(selectedEditKey, keyPoints);
+    const current = keyPoints[selectedEditKey];
+    const updated: KeyPointPositions = {
+      ...keyPoints,
+      [selectedEditKey]: {
+        x: Math.max(0, Math.min(imageW, current.x + dx)),
+        y: Math.max(0, Math.min(imageH, current.y + dy)),
+      },
+    };
+    setKeyPoints(updated);
+    setResults(computeRatios(updated));
+  }, [selectedEditKey, keyPoints, imageW, imageH, saveOriginal]);
+
+  // Return the selected point to its original position
+  const handleReset = useCallback(() => {
+    if (!selectedEditKey || !keyPoints) return;
+    const original = originalPositions.current[selectedEditKey];
+    if (!original) return;
+    const updated: KeyPointPositions = { ...keyPoints, [selectedEditKey]: { ...original } };
+    setKeyPoints(updated);
+    setResults(computeRatios(updated));
+    // Clear the saved original so subsequent moves track from here
+    movedKeys.current.delete(selectedEditKey);
+    delete originalPositions.current[selectedEditKey];
+  }, [selectedEditKey, keyPoints]);
+
+  const handleKeySelect = useCallback((key: PointKey | null) => {
+    setSelectedEditKey(key);
+  }, []);
+
+  const handleRatioSelect = useCallback((key: string | null) => {
+    setSelectedRatioKey(key);
+    if (key) setEditMode(false);
   }, []);
 
   const handleEditToggle = () => {
-    setEditMode((v) => !v);
-    if (!editMode) setSelectedKey(null); // clear diagram when entering edit mode
+    const next = !editMode;
+    setEditMode(next);
+    if (next) {
+      setSelectedRatioKey(null); // clear diagram when entering edit
+    } else {
+      setSelectedEditKey(null);  // clear selection when leaving edit
+    }
   };
 
   const reset = () => {
     setImageUrl(null); setLandmarks(null); setKeyPoints(null);
-    setResults([]); setErrorMsg(""); setEditMode(false); setSelectedKey(null);
+    setResults([]); setErrorMsg(""); setEditMode(false);
+    setSelectedRatioKey(null); setSelectedEditKey(null);
+    originalPositions.current = {}; movedKeys.current = new Set();
     setState("idle");
   };
 
@@ -93,7 +152,8 @@ function FaceAnalyzer() {
     ? (results.filter((r) => r.score === "ideal").length / results.length) * 100
     : 0;
 
-  const activeDiagram = selectedKey ? (DIAGRAMS[selectedKey] ?? null) : null;
+  const activeDiagram = selectedRatioKey ? (DIAGRAMS[selectedRatioKey] ?? null) : null;
+  const hasMoved = selectedEditKey ? movedKeys.current.has(selectedEditKey) : false;
 
   return (
     <div className="app">
@@ -136,7 +196,7 @@ function FaceAnalyzer() {
                 <li>AI detects 478 facial landmarks entirely in your browser</li>
                 <li>24 ratios are calculated and compared to research-based ideal ranges</li>
                 <li>Tap any ratio card to see its measurement lines drawn on the photo</li>
-                <li>Use "Adjust Points" to drag any landmark that landed in the wrong place</li>
+                <li>Use "Adjust Points" to drag or nudge any landmark precisely</li>
               </ol>
               <p className="idle-info__disclaimer">
                 All processing happens locally. No photo is ever uploaded to a server.
@@ -173,17 +233,17 @@ function FaceAnalyzer() {
               {editMode && (
                 <div className="edit-hint">
                   <Crosshair size={13} />
-                  Drag any colored dot to correct it — ratios update instantly
+                  Tap a dot to select it, then nudge precisely — or drag for coarse movement
                 </div>
               )}
-              {selectedKey && activeDiagram && (
+              {selectedRatioKey && activeDiagram && !editMode && (
                 <div className="diagram-hint">
-                  <span className="diagram-hint__key">{selectedKey.toUpperCase()}</span>
+                  <span className="diagram-hint__key">{selectedRatioKey.toUpperCase()}</span>
                   {activeDiagram.formulaParts.map((p, i) => {
                     let style: React.CSSProperties = {};
-                    if (p.role === "numerator") style.color = "#c9a96e";
+                    if (p.role === "numerator")   style.color = "#c9a96e";
                     else if (p.role === "denominator") style.color = "#60a5fa";
-                    else if (p.role === "angle") style.color = "#a78bfa";
+                    else if (p.role === "angle")   style.color = "#a78bfa";
                     return <span key={i} style={style}>{p.text}</span>;
                   })}
                 </div>
@@ -196,15 +256,27 @@ function FaceAnalyzer() {
                 imageHeight={imageH}
                 editMode={editMode}
                 activeDiagram={activeDiagram}
+                selectedEditKey={selectedEditKey}
+                onKeySelect={handleKeySelect}
+                onDragStart={handleDragStart}
                 onPointsChange={handlePointsChange}
               />
+              {editMode && selectedEditKey && (
+                <NudgePanel
+                  selectedKey={selectedEditKey}
+                  hasMoved={hasMoved}
+                  onNudge={handleNudge}
+                  onReset={handleReset}
+                  onDeselect={() => setSelectedEditKey(null)}
+                />
+              )}
             </div>
             <div className="done-right">
               <RatioTable
                 results={results}
                 overallScore={overallScore}
-                selectedKey={selectedKey}
-                onSelect={handleSelect}
+                selectedKey={selectedRatioKey}
+                onSelect={handleRatioSelect}
                 diagrams={DIAGRAMS}
               />
             </div>

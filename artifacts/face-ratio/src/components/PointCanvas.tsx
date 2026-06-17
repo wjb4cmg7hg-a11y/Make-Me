@@ -14,11 +14,15 @@ interface PointCanvasProps {
   imageHeight: number;
   editMode: boolean;
   activeDiagram: RatioDiagram | null;
+  selectedEditKey: PointKey | null;
+  onKeySelect: (key: PointKey | null) => void;
+  onDragStart: (key: PointKey) => void;
   onPointsChange: (updated: KeyPointPositions) => void;
 }
 
 const DOT_RADIUS = 6;
-const HIT_RADIUS = 16;
+const HIT_RADIUS = 18;
+const DRAG_THRESHOLD = 5; // px in canvas space before we consider it a drag
 
 // ── Drawing helpers ──────────────────────────────────────────────────────────
 
@@ -30,7 +34,8 @@ function drawDoubleArrow(
   lineWidth: number,
 ) {
   const angle = Math.atan2(by - ay, bx - ax);
-  const aSize = Math.min(9, Math.sqrt((bx - ax) ** 2 + (by - ay) ** 2) * 0.15);
+  const len = Math.sqrt((bx - ax) ** 2 + (by - ay) ** 2);
+  const aSize = Math.min(9, len * 0.15);
 
   ctx.save();
   ctx.strokeStyle = color;
@@ -39,27 +44,25 @@ function drawDoubleArrow(
   ctx.shadowColor = color;
   ctx.shadowBlur = 6;
 
-  // Line
   ctx.beginPath();
   ctx.moveTo(ax, ay);
   ctx.lineTo(bx, by);
   ctx.stroke();
 
-  // Arrowhead at b
-  ctx.beginPath();
-  ctx.moveTo(bx, by);
-  ctx.lineTo(bx - aSize * Math.cos(angle - 0.38), by - aSize * Math.sin(angle - 0.38));
-  ctx.lineTo(bx - aSize * Math.cos(angle + 0.38), by - aSize * Math.sin(angle + 0.38));
-  ctx.closePath();
-  ctx.fill();
-
-  // Arrowhead at a
-  ctx.beginPath();
-  ctx.moveTo(ax, ay);
-  ctx.lineTo(ax + aSize * Math.cos(angle - 0.38 + Math.PI), ay + aSize * Math.sin(angle - 0.38 + Math.PI));
-  ctx.lineTo(ax + aSize * Math.cos(angle + 0.38 + Math.PI), ay + aSize * Math.sin(angle + 0.38 + Math.PI));
-  ctx.closePath();
-  ctx.fill();
+  for (const [px2, py2, dir] of [[bx, by, 1], [ax, ay, -1]] as [number, number, number][]) {
+    ctx.beginPath();
+    ctx.moveTo(px2, py2);
+    ctx.lineTo(
+      px2 + dir * aSize * Math.cos(angle + 0.38 + Math.PI),
+      py2 + dir * aSize * Math.sin(angle + 0.38 + Math.PI),
+    );
+    ctx.lineTo(
+      px2 + dir * aSize * Math.cos(angle - 0.38 + Math.PI),
+      py2 + dir * aSize * Math.sin(angle - 0.38 + Math.PI),
+    );
+    ctx.closePath();
+    ctx.fill();
+  }
 
   ctx.shadowBlur = 0;
   ctx.restore();
@@ -75,22 +78,17 @@ function drawLineLabel(
   const mx = (ax + bx) / 2;
   const my = (ay + by) / 2;
   const angle = Math.atan2(by - ay, bx - ax);
-
   ctx.save();
   ctx.font = "bold 11px Inter, sans-serif";
   const tw = ctx.measureText(label).width;
-
-  // Offset label perpendicular to the line
   const perpX = -Math.sin(angle) * 14;
   const perpY = Math.cos(angle) * 14;
   const lx = mx + perpX - tw / 2;
   const ly = my + perpY;
-
-  ctx.fillStyle = "rgba(0,0,0,0.7)";
+  ctx.fillStyle = "rgba(0,0,0,0.75)";
   ctx.beginPath();
   ctx.roundRect(lx - 4, ly - 11, tw + 8, 16, 3);
   ctx.fill();
-
   ctx.fillStyle = color;
   ctx.fillText(label, lx, ly);
   ctx.restore();
@@ -107,31 +105,24 @@ function drawAngleArc(
   const angle1 = Math.atan2(ay - vy, ax - vx);
   const angle2 = Math.atan2(by - vy, bx - vx);
   const r = 24;
-
   ctx.save();
   ctx.strokeStyle = color;
   ctx.lineWidth = 1.5;
   ctx.shadowColor = color;
   ctx.shadowBlur = 4;
-
   ctx.beginPath();
   ctx.arc(vx, vy, r, angle1, angle2, false);
   ctx.stroke();
-
-  // Angle label at midpoint of arc
   const midAngle = (angle1 + angle2) / 2;
   const lx = vx + (r + 16) * Math.cos(midAngle);
   const ly = vy + (r + 16) * Math.sin(midAngle);
-
   ctx.font = "bold 11px Inter, sans-serif";
   const tw = ctx.measureText(label).width;
-
   ctx.shadowBlur = 0;
-  ctx.fillStyle = "rgba(0,0,0,0.7)";
+  ctx.fillStyle = "rgba(0,0,0,0.75)";
   ctx.beginPath();
   ctx.roundRect(lx - tw / 2 - 4, ly - 11, tw + 8, 16, 3);
   ctx.fill();
-
   ctx.fillStyle = color;
   ctx.fillText(label, lx - tw / 2, ly);
   ctx.restore();
@@ -147,15 +138,18 @@ export function PointCanvas({
   imageHeight,
   editMode,
   activeDiagram,
+  selectedEditKey,
+  onKeySelect,
+  onDragStart,
   onPointsChange,
 }: PointCanvasProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef    = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const imgRef = useRef<HTMLImageElement | null>(null);
+  const imgRef       = useRef<HTMLImageElement | null>(null);
 
   const scaleRef = useRef(1);
-  const kpRef = useRef<KeyPointPositions>(keyPoints);
-  const dragRef = useRef<{ key: PointKey } | null>(null);
+  const kpRef    = useRef<KeyPointPositions>(keyPoints);
+  const dragRef  = useRef<{ key: PointKey; startX: number; startY: number; moved: boolean } | null>(null);
   const [hoveredKey, setHoveredKey] = useState<PointKey | null>(null);
   const hoveredKeyRef = useRef<PointKey | null>(null);
 
@@ -176,14 +170,12 @@ export function PointCanvas({
     const W = imageWidth;
     const H = imageHeight;
 
-    // Mesh
     ctx.strokeStyle = activeDiagram
-      ? "rgba(139,195,160,0.15)"
+      ? "rgba(139,195,160,0.12)"
       : "rgba(139,195,160,0.28)";
     ctx.lineWidth = 0.7;
     for (const [a, b] of DRAW_CONNECTIONS) {
-      const la = landmarks[a];
-      const lb = landmarks[b];
+      const la = landmarks[a]; const lb = landmarks[b];
       if (!la || !lb) continue;
       ctx.beginPath();
       ctx.moveTo(la.x * W * scale, la.y * H * scale);
@@ -191,56 +183,35 @@ export function PointCanvas({
       ctx.stroke();
     }
 
-    // ── Measurement diagram ─────────────────────────────────────
+    // ── Diagram mode ─────────────────────────────────────────────
     if (activeDiagram) {
-      const px = (key: PointKey) => ({
-        x: kp[key].x * scale,
-        y: kp[key].y * scale,
-      });
-
-      // Lines
+      const px = (key: PointKey) => ({ x: kp[key].x * scale, y: kp[key].y * scale });
       for (const line of activeDiagram.lines) {
-        const from = px(line.from);
-        const to   = px(line.to);
+        const from = px(line.from); const to = px(line.to);
         const color = ROLE_COLOR[line.role];
-        const lw = line.role === "ref" ? 1.5 : 2.5;
-        drawDoubleArrow(ctx, from.x, from.y, to.x, to.y, color, lw);
+        drawDoubleArrow(ctx, from.x, from.y, to.x, to.y, color, line.role === "ref" ? 1.5 : 2.5);
         drawLineLabel(ctx, from.x, from.y, to.x, to.y, line.label, color);
       }
-
-      // Angles
       for (const ang of activeDiagram.angles) {
-        const v  = px(ang.vertex);
-        const a1 = px(ang.arm1);
-        const a2 = px(ang.arm2);
+        const v = px(ang.vertex); const a1 = px(ang.arm1); const a2 = px(ang.arm2);
         drawAngleArc(ctx, v.x, v.y, a1.x, a1.y, a2.x, a2.y, "#a78bfa", ang.label);
       }
-
-      // Highlight relevant key points
       const usedKeys = new Set<PointKey>([
         ...activeDiagram.lines.flatMap((l) => [l.from, l.to]),
         ...activeDiagram.angles.flatMap((a) => [a.vertex, a.arm1, a.arm2]),
       ]);
       for (const key of usedKeys) {
-        const pt = kp[key];
-        const def = KEY_POINT_DEFS[key];
-        const cx = pt.x * scale;
-        const cy = pt.y * scale;
+        const pt = kp[key]; const def = KEY_POINT_DEFS[key];
+        const cx = pt.x * scale; const cy = pt.y * scale;
         ctx.save();
-        ctx.shadowColor = def.color;
-        ctx.shadowBlur = 10;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 7, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-        ctx.fillStyle = def.color;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.restore();
+        ctx.shadowColor = def.color; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fill();
+        ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+        ctx.fillStyle = def.color; ctx.fill();
+        ctx.shadowBlur = 0; ctx.restore();
       }
-      return; // Skip edit-mode dots when showing diagram
+      return;
     }
 
     // ── Edit mode dots ───────────────────────────────────────────
@@ -248,21 +219,31 @@ export function PointCanvas({
 
     const keys = Object.keys(kp) as PointKey[];
     for (const key of keys) {
-      const pt = kp[key];
-      const def = KEY_POINT_DEFS[key];
-      const cx = pt.x * scale;
-      const cy = pt.y * scale;
+      const pt = kp[key]; const def = KEY_POINT_DEFS[key];
+      const cx = pt.x * scale; const cy = pt.y * scale;
+      const isSelected = selectedEditKey === key;
       const isHovered  = hoveredKeyRef.current === key;
       const isDragging = dragRef.current?.key === key;
-      const r = isDragging ? DOT_RADIUS + 3 : isHovered ? DOT_RADIUS + 1 : DOT_RADIUS;
+      const r = isDragging ? DOT_RADIUS + 3 : isSelected ? DOT_RADIUS + 2 : isHovered ? DOT_RADIUS + 1 : DOT_RADIUS;
 
       ctx.save();
       ctx.shadowColor = def.color;
-      ctx.shadowBlur = isHovered || isDragging ? 10 : 4;
+      ctx.shadowBlur = isSelected ? 16 : isHovered || isDragging ? 10 : 4;
+
+      // Outer ring for selected
+      if (isSelected) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r + 5, 0, Math.PI * 2);
+        ctx.strokeStyle = def.color;
+        ctx.globalAlpha = 0.4;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
 
       ctx.beginPath();
       ctx.arc(cx, cy, r + 2, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(0,0,0,0.5)";
+      ctx.fillStyle = "rgba(0,0,0,0.55)";
       ctx.fill();
 
       ctx.beginPath();
@@ -273,21 +254,21 @@ export function PointCanvas({
       ctx.shadowBlur = 0;
       ctx.restore();
 
-      if (isHovered || isDragging) {
+      if (isSelected || isHovered || isDragging) {
         const label = def.label;
         ctx.font = "bold 11px Inter, sans-serif";
         const tw = ctx.measureText(label).width;
-        const px2 = cx - tw / 2;
-        const py2 = cy - r - 14;
-        ctx.fillStyle = "rgba(0,0,0,0.75)";
+        const lx = cx - tw / 2;
+        const ly = cy - r - 14;
+        ctx.fillStyle = "rgba(0,0,0,0.8)";
         ctx.beginPath();
-        ctx.roundRect(px2 - 5, py2 - 11, tw + 10, 16, 4);
+        ctx.roundRect(lx - 5, ly - 11, tw + 10, 16, 4);
         ctx.fill();
         ctx.fillStyle = def.color;
-        ctx.fillText(label, px2, py2);
+        ctx.fillText(label, lx, ly);
       }
     }
-  }, [landmarks, imageWidth, imageHeight, editMode, activeDiagram]);
+  }, [landmarks, imageWidth, imageHeight, editMode, activeDiagram, selectedEditKey]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -307,7 +288,7 @@ export function PointCanvas({
     };
   }, [imageUrl, imageWidth, imageHeight, draw]);
 
-  useEffect(() => { draw(); }, [keyPoints, editMode, activeDiagram, draw, hoveredKey]);
+  useEffect(() => { draw(); }, [keyPoints, editMode, activeDiagram, selectedEditKey, draw, hoveredKey]);
 
   const canvasPos = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current!;
@@ -338,7 +319,7 @@ export function PointCanvas({
     const { x, y } = canvasPos(e);
     const nearest = findNearest(x, y);
     if (!nearest) return;
-    dragRef.current = { key: nearest };
+    dragRef.current = { key: nearest, startX: x, startY: y, moved: false };
     (e.target as HTMLCanvasElement).setPointerCapture(e.pointerId);
     e.preventDefault();
   }, [editMode]);
@@ -346,9 +327,17 @@ export function PointCanvas({
   const onPointerMove = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     const { x, y } = canvasPos(e);
     if (dragRef.current) {
-      const scale = scaleRef.current;
-      kpRef.current = { ...kpRef.current, [dragRef.current.key]: { x: x / scale, y: y / scale } };
-      draw();
+      const dx = x - dragRef.current.startX;
+      const dy = y - dragRef.current.startY;
+      if (!dragRef.current.moved && Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
+        dragRef.current.moved = true;
+        onDragStart(dragRef.current.key);
+      }
+      if (dragRef.current.moved) {
+        const scale = scaleRef.current;
+        kpRef.current = { ...kpRef.current, [dragRef.current.key]: { x: x / scale, y: y / scale } };
+        draw();
+      }
       e.preventDefault();
       return;
     }
@@ -358,15 +347,20 @@ export function PointCanvas({
       hoveredKeyRef.current = nearest;
       setHoveredKey(nearest);
     }
-  }, [editMode, draw]);
+  }, [editMode, draw, onDragStart]);
 
   const onPointerUp = useCallback(() => {
-    if (dragRef.current) {
+    if (!dragRef.current) return;
+    const { moved, key } = dragRef.current;
+    if (moved) {
       onPointsChange({ ...kpRef.current });
-      dragRef.current = null;
-      draw();
+    } else {
+      // It was a tap, not a drag — toggle selection
+      onKeySelect(key === selectedEditKey ? null : key);
     }
-  }, [onPointsChange, draw]);
+    dragRef.current = null;
+    draw();
+  }, [onPointsChange, onKeySelect, selectedEditKey, draw]);
 
   const onPointerLeave = useCallback(() => {
     if (hoveredKeyRef.current !== null) {
@@ -376,7 +370,7 @@ export function PointCanvas({
   }, []);
 
   const cursor = editMode
-    ? dragRef.current ? "grabbing" : hoveredKey ? "grab" : "crosshair"
+    ? dragRef.current?.moved ? "grabbing" : hoveredKey ? "grab" : "crosshair"
     : "default";
 
   return (

@@ -542,6 +542,143 @@ body {
   border-left-width: 3px;
 }
 
+/* ─── Nudge Panel ─────────────────────────────────────────────── */
+.nudge-panel {
+  margin-top: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-bright);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nudge-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.nudge-panel__label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.nudge-panel__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.nudge-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nudge-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.05);
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.nudge-action-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: var(--text);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.nudge-action-btn--reset {
+  color: #c9a96e;
+  border-color: rgba(201,169,110,0.3);
+}
+
+.nudge-action-btn--reset:hover {
+  background: rgba(201,169,110,0.1);
+  color: #e2c48a;
+}
+
+.nudge-action-btn--close {
+  padding: 4px 7px;
+}
+
+/* D-pad */
+.nudge-dpad {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nudge-dpad__col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.nudge-dpad__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nudge-dpad__center {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+}
+
+.nudge-dir-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--border-bright);
+  background: rgba(255,255,255,0.05);
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, transform 0.08s;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
+
+.nudge-dir-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: var(--text);
+  border-color: rgba(255,255,255,0.22);
+}
+
+.nudge-dir-btn:active {
+  background: rgba(255,255,255,0.15);
+  transform: scale(0.92);
+}
+
+.nudge-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
 /* ─── Results hint ────────────────────────────────────────────── */
 .results-summary__hint {
   font-size: 0.72rem; color: var(--text-muted);
