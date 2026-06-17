@@ -10,7 +10,7 @@ export type PointKey =
   | "ear_r" | "ear_l"
   | "zygo_r" | "zygo_l"
   | "gonia_r" | "gonia_l"
-  | "chin"
+  | "chin" | "jaw_apex"
   | "r_eye_lat" | "r_eye_med" | "l_eye_lat" | "l_eye_med"
   | "r_eye_top" | "r_eye_bot" | "l_eye_top" | "l_eye_bot"
   | "r_pupil" | "l_pupil"
@@ -43,6 +43,7 @@ export const KEY_POINT_DEFS: Record<PointKey, PointDef> = {
   gonia_r:       { label: "Gonia R",        group: "face",     color: "#60a5fa", description: "Right jaw angle" },
   gonia_l:       { label: "Gonia L",        group: "face",     color: "#60a5fa", description: "Left jaw angle" },
   chin:          { label: "Chin",           group: "face",     color: "#60a5fa", description: "Bottom of chin (menton)" },
+  jaw_apex:      { label: "Jaw Apex",       group: "face",     color: "#f87171", description: "JFA vertex — drag below chin where jaw lines meet" },
   r_eye_lat:     { label: "R Lat Canthus",  group: "eyes",     color: "#34d399", description: "Right outer eye corner" },
   r_eye_med:     { label: "R Med Canthus",  group: "eyes",     color: "#34d399", description: "Right inner eye corner" },
   l_eye_lat:     { label: "L Lat Canthus",  group: "eyes",     color: "#34d399", description: "Left outer eye corner" },
@@ -104,6 +105,7 @@ export function extractKeyPoints(
     gonia_r:       p(LM.GONIA_R),
     gonia_l:       p(LM.GONIA_L),
     chin:          p(LM.CHIN),
+    jaw_apex:      (() => { const c = p(LM.CHIN); return { x: c.x, y: c.y + h * 0.05 }; })(),
     r_eye_lat:     p(LM.R_EYE_LATERAL),
     r_eye_med:     p(LM.R_EYE_MEDIAL),
     l_eye_lat:     p(LM.L_EYE_LATERAL),

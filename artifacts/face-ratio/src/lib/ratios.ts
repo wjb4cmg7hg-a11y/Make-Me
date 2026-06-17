@@ -49,7 +49,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
     ear_r, ear_l,
     zygo_r, zygo_l,
     gonia_r, gonia_l,
-    chin,
+    chin, jaw_apex,
     r_eye_lat, r_eye_med, l_eye_lat, l_eye_med,
     r_eye_top, r_eye_bot, l_eye_top, l_eye_bot,
     r_pupil, l_pupil,
@@ -124,13 +124,13 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const emeVal    = Math.atan2(vertMouth, halfIPD) * (180 / Math.PI);
   const emeIdeal  = { min: 45, max: 49 };
 
-  // 8. JFA
-  const jfaV1x = gonia_r.x - chin.x;
-  const jfaV1y = gonia_r.y - chin.y;
-  const jfaV2x = gonia_l.x - chin.x;
-  const jfaV2y = gonia_l.y - chin.y;
+  // 8. JFA — angle at jaw_apex (below chin) between lines from each gonion
+  const jfaV1x = gonia_r.x - jaw_apex.x;
+  const jfaV1y = gonia_r.y - jaw_apex.y;
+  const jfaV2x = gonia_l.x - jaw_apex.x;
+  const jfaV2y = gonia_l.y - jaw_apex.y;
   const jfaVal   = angleBetweenVectors(jfaV1x, jfaV1y, jfaV2x, jfaV2y);
-  const jfaIdeal = { min: 85, max: 95 };
+  const jfaIdeal = { min: 88, max: 92 };
 
   // 9. Lower Full Face
   const lffVal   = (nasionToChin / totalFaceHeight) * 100;
@@ -208,9 +208,9 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const bitemporalVal   = (temporalWidth / bizygoWidth) * 100;
   const bitemporalIdeal = { min: 85, max: 95 };
 
-  // 24. Forehead Length
+  // 24. Forehead Length — ideal is ~2x as wide as long
   const foreheadLengthVal   = temporalWidth / hairlineToGlabella;
-  const foreheadLengthIdeal = { min: 0.45, max: 0.52 };
+  const foreheadLengthIdeal = { min: 1.85, max: 2.15 };
 
   const raw: Array<{
     key: string; name: string; abbr: string; value: number;

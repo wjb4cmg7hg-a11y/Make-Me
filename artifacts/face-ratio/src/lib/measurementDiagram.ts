@@ -127,14 +127,14 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
 
   jfa: {
     formulaParts: [
-      { text: "Angle at Chin Between Mandible Lines", role: "angle" },
+      { text: "Angle at Jaw Apex Between Mandible Lines", role: "angle" },
     ],
     lines: [
-      { from: "gonia_r", to: "chin", role: "numerator",   label: "R Mandible" },
-      { from: "gonia_l", to: "chin", role: "denominator", label: "L Mandible" },
+      { from: "gonia_r",  to: "jaw_apex", role: "numerator",   label: "R Mandible" },
+      { from: "gonia_l",  to: "jaw_apex", role: "denominator", label: "L Mandible" },
     ],
     angles: [
-      { vertex: "chin", arm1: "gonia_r", arm2: "gonia_l", label: "JFA" },
+      { vertex: "jaw_apex", arm1: "gonia_r", arm2: "gonia_l", label: "JFA" },
     ],
   },
 
@@ -226,12 +226,12 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     lines: [
       { from: "subnasale", to: "r_eye_lat", role: "numerator",   label: "IAA arm" },
       { from: "subnasale", to: "l_eye_lat", role: "numerator",   label: "IAA arm" },
-      { from: "gonia_r",   to: "chin",      role: "denominator", label: "JFA arm" },
-      { from: "gonia_l",   to: "chin",      role: "denominator", label: "JFA arm" },
+      { from: "gonia_r",   to: "jaw_apex",  role: "denominator", label: "JFA arm" },
+      { from: "gonia_l",   to: "jaw_apex",  role: "denominator", label: "JFA arm" },
     ],
     angles: [
       { vertex: "subnasale", arm1: "r_eye_lat", arm2: "l_eye_lat", label: "IAA" },
-      { vertex: "chin",      arm1: "gonia_r",   arm2: "gonia_l",   label: "JFA" },
+      { vertex: "jaw_apex",  arm1: "gonia_r",   arm2: "gonia_l",   label: "JFA" },
     ],
   },
 
