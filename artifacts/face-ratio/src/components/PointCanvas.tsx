@@ -183,7 +183,7 @@ export function PointCanvas({
       ctx.stroke();
     }
 
-    // ── Diagram mode ─────────────────────────────────────────────
+    // ── Diagram overlay (works alongside edit mode) ───────────────
     if (activeDiagram) {
       const px = (key: PointKey) => ({ x: kp[key].x * scale, y: kp[key].y * scale });
       for (const line of activeDiagram.lines) {
@@ -196,22 +196,26 @@ export function PointCanvas({
         const v = px(ang.vertex); const a1 = px(ang.arm1); const a2 = px(ang.arm2);
         drawAngleArc(ctx, v.x, v.y, a1.x, a1.y, a2.x, a2.y, "#a78bfa", ang.label);
       }
-      const usedKeys = new Set<PointKey>([
-        ...activeDiagram.lines.flatMap((l) => [l.from, l.to]),
-        ...activeDiagram.angles.flatMap((a) => [a.vertex, a.arm1, a.arm2]),
-      ]);
-      for (const key of usedKeys) {
-        const pt = kp[key]; const def = KEY_POINT_DEFS[key];
-        const cx = pt.x * scale; const cy = pt.y * scale;
-        ctx.save();
-        ctx.shadowColor = def.color; ctx.shadowBlur = 10;
-        ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fill();
-        ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-        ctx.fillStyle = def.color; ctx.fill();
-        ctx.shadowBlur = 0; ctx.restore();
+      // If not in edit mode, draw static highlight dots and stop
+      if (!editMode) {
+        const usedKeys = new Set<PointKey>([
+          ...activeDiagram.lines.flatMap((l) => [l.from, l.to]),
+          ...activeDiagram.angles.flatMap((a) => [a.vertex, a.arm1, a.arm2]),
+        ]);
+        for (const key of usedKeys) {
+          const pt = kp[key]; const def = KEY_POINT_DEFS[key];
+          const cx = pt.x * scale; const cy = pt.y * scale;
+          ctx.save();
+          ctx.shadowColor = def.color; ctx.shadowBlur = 10;
+          ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fill();
+          ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+          ctx.fillStyle = def.color; ctx.fill();
+          ctx.shadowBlur = 0; ctx.restore();
+        }
+        return;
       }
-      return;
+      // In edit mode — fall through so draggable dots render on top of diagram lines
     }
 
     // ── Edit mode dots ───────────────────────────────────────────

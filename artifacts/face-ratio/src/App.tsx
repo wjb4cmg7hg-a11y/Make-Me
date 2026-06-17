@@ -127,16 +127,13 @@ function FaceAnalyzer() {
 
   const handleRatioSelect = useCallback((key: string | null) => {
     setSelectedRatioKey(key);
-    if (key) setEditMode(false);
   }, []);
 
   const handleEditToggle = () => {
     const next = !editMode;
     setEditMode(next);
-    if (next) {
-      setSelectedRatioKey(null); // clear diagram when entering edit
-    } else {
-      setSelectedEditKey(null);  // clear selection when leaving edit
+    if (!next) {
+      setSelectedEditKey(null); // clear dot selection when leaving edit
     }
   };
 
@@ -236,7 +233,7 @@ function FaceAnalyzer() {
                   Tap a dot to select it, then nudge precisely — or drag for coarse movement
                 </div>
               )}
-              {selectedRatioKey && activeDiagram && !editMode && (
+              {selectedRatioKey && activeDiagram && (
                 <div className="diagram-hint">
                   <span className="diagram-hint__key">{selectedRatioKey.toUpperCase()}</span>
                   {activeDiagram.formulaParts.map((p, i) => {
