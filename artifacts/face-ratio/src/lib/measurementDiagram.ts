@@ -1,15 +1,14 @@
-import type { PointKey } from "./keyPoints";
 
-export type LineRole = "numerator" | "denominator" | "ref";
+import type { PointKey } from './keyPoints';
 
-export interface DiagramLine {
+export interface LineDef {
   from: PointKey;
   to: PointKey;
-  role: LineRole;
-  label: string;
+  role: 'numerator' | 'denominator' | 'ref';
+  label?: string;
 }
 
-export interface DiagramAngle {
+export interface AngleDef {
   vertex: PointKey;
   arm1: PointKey;
   arm2: PointKey;
@@ -18,19 +17,20 @@ export interface DiagramAngle {
 
 export interface FormulaPart {
   text: string;
-  role?: "numerator" | "denominator" | "angle" | "operator" | "suffix";
+  role: 'numerator' | 'denominator' | 'operator' | 'suffix' | 'angle' | 'ref';
 }
 
 export interface RatioDiagram {
   formulaParts: FormulaPart[];
-  lines: DiagramLine[];
-  angles: DiagramAngle[];
+  lines: LineDef[];
+  angles: AngleDef[];
 }
 
-export const ROLE_COLOR: Record<LineRole, string> = {
-  numerator:   "#c9a96e",
+export const ROLE_COLOR = {
+  numerator: "#c9a96e",
   denominator: "#60a5fa",
-  ref:         "rgba(255,255,255,0.25)",
+  ref: "#a78bfa",
+  angle: "#a78bfa",
 };
 
 export const DIAGRAMS: Record<string, RatioDiagram> = {
@@ -47,7 +47,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     angles: [],
   },
-
   canthal: {
     formulaParts: [
       { text: "Angle of Canthus Line vs Horizontal", role: "angle" },
@@ -58,7 +57,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     angles: [],
   },
-
   pfl: {
     formulaParts: [
       { text: "Eye Fissure Length", role: "numerator" },
@@ -73,7 +71,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     angles: [],
   },
-
   iaa: {
     formulaParts: [
       { text: "Angle at Alar Base to Lateral Canthi", role: "angle" },
@@ -86,7 +83,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
       { vertex: "subnasale", arm1: "r_eye_lat", arm2: "l_eye_lat", label: "IAA" },
     ],
   },
-
   icd: {
     formulaParts: [
       { text: "Eye Fissure Length", role: "numerator" },
@@ -95,11 +91,11 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     lines: [
       { from: "r_eye_med", to: "r_eye_lat", role: "numerator",   label: "R Eye Width" },
+      { from: "l_eye_med", to: "l_eye_lat", role: "numerator",   label: "L Eye Width" },
       { from: "r_eye_med", to: "l_eye_med", role: "denominator", label: "Intercanthal" },
     ],
     angles: [],
   },
-
   ear: {
     formulaParts: [
       { text: "Eye Width", role: "numerator" },
@@ -108,23 +104,24 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     lines: [
       { from: "r_eye_lat", to: "r_eye_med", role: "numerator",   label: "Eye Width" },
+      { from: "l_eye_lat", to: "l_eye_med", role: "numerator",   label: "Eye Width" },
       { from: "r_eye_top", to: "r_eye_bot", role: "denominator", label: "Eye Height" },
+      { from: "l_eye_top", to: "l_eye_bot", role: "denominator", label: "Eye Height" },
     ],
     angles: [],
   },
-
   eme: {
     formulaParts: [
-      { text: "Angle at Pupil Midpoint → Mouth Center", role: "angle" },
+      { text: "Angle at Mouth Center to Pupils", role: "angle" },
     ],
     lines: [
-      { from: "r_pupil",   to: "l_pupil",   role: "ref",         label: "Pupil Line" },
-      { from: "r_pupil",   to: "mouth_r",   role: "numerator",   label: "Pupil→Mouth R" },
-      { from: "l_pupil",   to: "mouth_l",   role: "denominator", label: "Pupil→Mouth L" },
+      { from: "mouth_c", to: "l_pupil", role: "numerator",   label: "Mouth→L Pupil" },
+      { from: "mouth_c", to: "r_pupil", role: "denominator", label: "Mouth→R Pupil" },
     ],
-    angles: [],
+    angles: [
+      { vertex: "mouth_c", arm1: "l_pupil", arm2: "r_pupil", label: "EME" },
+    ],
   },
-
   jfa: {
     formulaParts: [
       { text: "Angle at Jaw Apex Between Mandible Lines", role: "angle" },
@@ -137,7 +134,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
       { vertex: "jaw_apex", arm1: "gonia_r", arm2: "gonia_l", label: "JFA" },
     ],
   },
-
   lff: {
     formulaParts: [
       { text: "Nasion → Chin", role: "numerator" },
@@ -151,7 +147,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     angles: [],
   },
-
   jaww: {
     formulaParts: [
       { text: "Bigonial Width", role: "numerator" },
@@ -164,7 +159,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     angles: [],
   },
-
   thirds: {
     formulaParts: [
       { text: "Hairline→Glabella : Glabella→Subnasale : Subnasale→Chin", role: "angle" },
@@ -176,34 +170,18 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     angles: [],
   },
-
-  fifths: {
-    formulaParts: [
-      { text: "Ear→Canthus : Eye Width : Intercanthal : Eye Width : Canthus→Ear", role: "angle" },
-    ],
-    lines: [
-      { from: "ear_r",    to: "r_eye_lat", role: "numerator",   label: "1st Fifth" },
-      { from: "r_eye_lat",to: "r_eye_med", role: "denominator", label: "2nd Fifth" },
-      { from: "r_eye_med",to: "l_eye_med", role: "ref",         label: "3rd Fifth" },
-      { from: "l_eye_med",to: "l_eye_lat", role: "numerator",   label: "4th Fifth" },
-      { from: "l_eye_lat",to: "ear_l",     role: "denominator", label: "5th Fifth" },
-    ],
-    angles: [],
-  },
-
   fwhr: {
     formulaParts: [
       { text: "Bizygomatic Width", role: "numerator" },
       { text: " ÷ ", role: "operator" },
-      { text: "Midface Height", role: "denominator" },
+      { text: "Brow → Upper Lip", role: "denominator" },
     ],
     lines: [
-      { from: "zygo_r",       to: "zygo_l",        role: "numerator",   label: "Bizygomatic" },
-      { from: "glabella",     to: "upper_lip_top",  role: "denominator", label: "Midface Height" },
+      { from: "zygo_r",   to: "zygo_l",  role: "numerator",   label: "Bizygomatic" },
+      { from: "brow_mid", to: "upper_lip_top", role: "denominator", label: "Midface Height" },
     ],
     angles: [],
   },
-
   tfwhr: {
     formulaParts: [
       { text: "Total Face Height", role: "numerator" },
@@ -216,7 +194,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     angles: [],
   },
-
   iaaJfa: {
     formulaParts: [
       { text: "IAA Angle", role: "numerator" },
@@ -234,7 +211,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
       { vertex: "jaw_apex",  arm1: "gonia_r",   arm2: "gonia_l",   label: "JFA" },
     ],
   },
-
   midface: {
     formulaParts: [
       { text: "Interpupil Distance", role: "numerator" },
@@ -242,12 +218,11 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
       { text: "Midface Height", role: "denominator" },
     ],
     lines: [
-      { from: "r_pupil",     to: "l_pupil",       role: "numerator",   label: "Pupil Sep." },
-      { from: "glabella",    to: "upper_lip_top",  role: "denominator", label: "Midface Ht." },
+        { from: "r_pupil", to: "l_pupil", role: "numerator", label: "Interpupil" },
+        { from: "pupil_mid", to: "upper_lip_top", role: "denominator", label: "Midface Ht." }
     ],
     angles: [],
   },
-
   noseHW: {
     formulaParts: [
       { text: "Nose Height", role: "numerator" },
@@ -260,7 +235,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     angles: [],
   },
-
   noseBizygo: {
     formulaParts: [
       { text: "Bizygomatic Width", role: "numerator" },
@@ -273,7 +247,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     angles: [],
   },
-
   lipRatio: {
     formulaParts: [
       { text: "Lower Lip Height", role: "numerator" },
@@ -286,7 +259,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     angles: [],
   },
-
   chinPhil: {
     formulaParts: [
       { text: "Chin → Lower Lip", role: "numerator" },
@@ -299,7 +271,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     angles: [],
   },
-
   mouthBigon: {
     formulaParts: [
       { text: "Mouth Width", role: "numerator" },
@@ -313,7 +284,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     angles: [],
   },
-
   mouthNose: {
     formulaParts: [
       { text: "Mouth Width", role: "numerator" },
@@ -326,7 +296,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     angles: [],
   },
-
   bitemporal: {
     formulaParts: [
       { text: "Temporal Width", role: "numerator" },
@@ -340,7 +309,6 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     angles: [],
   },
-
   forehead: {
     formulaParts: [
       { text: "Temporal Width", role: "numerator" },
