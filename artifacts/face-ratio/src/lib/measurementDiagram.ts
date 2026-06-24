@@ -530,14 +530,14 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   lowerThirdProportion: {
     lines: [
-      { from: "subnasale", to: "upper_lip_top", color: "#ffab00" },
+      { from: "subnasale", to: "lip_center", color: "#ffab00" },
       { from: "subnasale", to: "chin", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
       { text: "Lower Third Proportion", role: "label" },
       { text: "=", role: "operator" },
-      { text: "Subnasale to Upper Lip", role: "numerator" },
+      { text: "Subnasale to Mouth Center", role: "numerator" },
       { text: "/", role: "operator" },
       { text: "Subnasale to Chin", role: "denominator" },
     ],

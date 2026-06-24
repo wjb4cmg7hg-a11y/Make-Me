@@ -243,7 +243,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const icdToMouthWidthRatioVal = intercanthalDist / mouthWidth;
   const icdToMouthWidthRatioIdeal = { min: 0.85, max: 0.85 };
 
-  const lowerThirdProportionVal = verticalDist(subnasale, upper_lip_top) / verticalDist(subnasale, chin);
+  const lowerThirdProportionVal = (verticalDist(subnasale, lip_center) / verticalDist(subnasale, chin)) * 100;
   const lowerThirdProportionIdeal = { min: 32.25, max: 32.25 };
 
   const neckWidthVal = neckWidth / bigonialWidth * 100;
