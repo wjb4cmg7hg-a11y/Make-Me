@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback, useState, useMemo } from "react";
 import type { Landmarks } from "../lib/landmarks";
 import type { KeyPointPositions, PointKey } from "../lib/keyPoints";
 import { KEY_POINT_DEFS } from "../lib/keyPoints";
@@ -18,6 +18,7 @@ interface PointCanvasProps {
   onKeySelect: (key: PointKey | null) => void;
   onDragStart: (key: PointKey) => void;
   onPointsChange: (updated: KeyPointPositions) => void;
+  onPointDrop: (key: PointKey, x: number, y: number) => void;
 }
 
 const DOT_RADIUS = 6;
@@ -142,6 +143,7 @@ export function PointCanvas({
   onKeySelect,
   onDragStart,
   onPointsChange,
+  onPointDrop,
 }: PointCanvasProps) {
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -154,6 +156,14 @@ export function PointCanvas({
   const hoveredKeyRef = useRef<PointKey | null>(null);
 
   useEffect(() => { kpRef.current = keyPoints; }, [keyPoints]);
+
+  const diagramKeys = useMemo(() => {
+    if (!activeDiagram) return null;
+    return new Set<PointKey>([
+      ...activeDiagram.lines.flatMap((l) => [l.from, l.to]),
+      ...activeDiagram.angles.flatMap((a) => [a.vertex, a.arm1, a.arm2]),
+    ]);
+  }, [activeDiagram]);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -183,96 +193,95 @@ export function PointCanvas({
       ctx.stroke();
     }
 
-    // ── Diagram overlay (works alongside edit mode) ───────────────
     if (activeDiagram) {
-      const px = (key: PointKey) => ({ x: kp[key].x * scale, y: kp[key].y * scale });
+      const px = (key: PointKey) => {
+        if (!kp[key]) {
+          console.warn(`Missing keypoint: ${key} for diagram`);
+          return { x: 0, y: 0 };
+        }
+        return { x: kp[key]!.x * scale, y: kp[key]!.y * scale };
+      };
       for (const line of activeDiagram.lines) {
         const from = px(line.from); const to = px(line.to);
         const color = ROLE_COLOR[line.role];
         drawDoubleArrow(ctx, from.x, from.y, to.x, to.y, color, line.role === "ref" ? 1.5 : 2.5);
-        drawLineLabel(ctx, from.x, from.y, to.x, to.y, line.label, color);
+        if (line.label) {
+          drawLineLabel(ctx, from.x, from.y, to.x, to.y, line.label, color);
+        }
       }
       for (const ang of activeDiagram.angles) {
         const v = px(ang.vertex); const a1 = px(ang.arm1); const a2 = px(ang.arm2);
         drawAngleArc(ctx, v.x, v.y, a1.x, a1.y, a2.x, a2.y, "#a78bfa", ang.label);
       }
-      // If not in edit mode, draw static highlight dots and stop
-      if (!editMode) {
-        const usedKeys = new Set<PointKey>([
-          ...activeDiagram.lines.flatMap((l) => [l.from, l.to]),
-          ...activeDiagram.angles.flatMap((a) => [a.vertex, a.arm1, a.arm2]),
-        ]);
-        for (const key of usedKeys) {
-          const pt = kp[key]; const def = KEY_POINT_DEFS[key];
-          const cx = pt.x * scale; const cy = pt.y * scale;
-          ctx.save();
-          ctx.shadowColor = def.color; ctx.shadowBlur = 10;
-          ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fill();
-          ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-          ctx.fillStyle = def.color; ctx.fill();
-          ctx.shadowBlur = 0; ctx.restore();
-        }
-        return;
-      }
-      // In edit mode — fall through so draggable dots render on top of diagram lines
     }
 
-    // ── Edit mode dots ───────────────────────────────────────────
-    if (!editMode) return;
+    const keysToRender = editMode
+      ? (diagramKeys ? Array.from(diagramKeys) : Object.keys(KEY_POINT_DEFS) as PointKey[])
+      : (diagramKeys ? Array.from(diagramKeys) : []);
 
-    const keys = Object.keys(kp) as PointKey[];
-    for (const key of keys) {
-      const pt = kp[key]; const def = KEY_POINT_DEFS[key];
+    for (const key of keysToRender) {
+      const pt = kp[key];
+      if (!pt) continue;
+      const def = KEY_POINT_DEFS[key];
       const cx = pt.x * scale; const cy = pt.y * scale;
-      const isSelected = selectedEditKey === key;
-      const isHovered  = hoveredKeyRef.current === key;
-      const isDragging = dragRef.current?.key === key;
-      const r = isDragging ? DOT_RADIUS + 3 : isSelected ? DOT_RADIUS + 2 : isHovered ? DOT_RADIUS + 1 : DOT_RADIUS;
 
-      ctx.save();
-      ctx.shadowColor = def.color;
-      ctx.shadowBlur = isSelected ? 16 : isHovered || isDragging ? 10 : 4;
+      if (editMode) {
+        const isSelected = selectedEditKey === key;
+        const isHovered  = hoveredKeyRef.current === key;
+        const isDragging = dragRef.current?.key === key;
+        const r = isDragging ? DOT_RADIUS + 3 : isSelected ? DOT_RADIUS + 2 : isHovered ? DOT_RADIUS + 1 : DOT_RADIUS;
 
-      // Outer ring for selected
-      if (isSelected) {
+        ctx.save();
+        ctx.shadowColor = def.color;
+        ctx.shadowBlur = isSelected ? 16 : isHovered || isDragging ? 10 : 4;
+
+        if (isSelected) {
+          ctx.beginPath();
+          ctx.arc(cx, cy, r + 5, 0, Math.PI * 2);
+          ctx.strokeStyle = def.color;
+          ctx.globalAlpha = 0.4;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+
         ctx.beginPath();
-        ctx.arc(cx, cy, r + 5, 0, Math.PI * 2);
-        ctx.strokeStyle = def.color;
-        ctx.globalAlpha = 0.4;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-      }
-
-      ctx.beginPath();
-      ctx.arc(cx, cy, r + 2, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(0,0,0,0.55)";
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.fillStyle = def.color;
-      ctx.fill();
-
-      ctx.shadowBlur = 0;
-      ctx.restore();
-
-      if (isSelected || isHovered || isDragging) {
-        const label = def.label;
-        ctx.font = "bold 11px Inter, sans-serif";
-        const tw = ctx.measureText(label).width;
-        const lx = cx - tw / 2;
-        const ly = cy - r - 14;
-        ctx.fillStyle = "rgba(0,0,0,0.8)";
-        ctx.beginPath();
-        ctx.roundRect(lx - 5, ly - 11, tw + 10, 16, 4);
+        ctx.arc(cx, cy, r + 2, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,0,0,0.55)";
         ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
         ctx.fillStyle = def.color;
-        ctx.fillText(label, lx, ly);
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
+        ctx.restore();
+
+        if (isSelected || isHovered || isDragging) {
+          const label = def.label;
+          ctx.font = "bold 11px Inter, sans-serif";
+          const tw = ctx.measureText(label).width;
+          const lx = cx - tw / 2;
+          const ly = cy - r - 14;
+          ctx.fillStyle = "rgba(0,0,0,0.8)";
+          ctx.beginPath();
+          ctx.roundRect(lx - 5, ly - 11, tw + 10, 16, 4);
+          ctx.fill();
+          ctx.fillStyle = def.color;
+          ctx.fillText(label, lx, ly);
+        }
+      } else { // Not edit mode, but diagram is active
+        ctx.save();
+        ctx.shadowColor = def.color; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fill();
+        ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+        ctx.fillStyle = def.color; ctx.fill();
+        ctx.shadowBlur = 0; ctx.restore();
       }
     }
-  }, [landmarks, imageWidth, imageHeight, editMode, activeDiagram, selectedEditKey]);
+  }, [landmarks, imageWidth, imageHeight, editMode, activeDiagram, selectedEditKey, diagramKeys]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -294,7 +303,7 @@ export function PointCanvas({
 
   useEffect(() => { draw(); }, [keyPoints, editMode, activeDiagram, selectedEditKey, draw, hoveredKey]);
 
-  const canvasPos = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const canvasPos = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current!;
     const rect = canvas.getBoundingClientRect();
     return {
@@ -303,20 +312,24 @@ export function PointCanvas({
     };
   };
 
-  const findNearest = (cx: number, cy: number): PointKey | null => {
+  const findNearest = useCallback((cx: number, cy: number): PointKey | null => {
     const scale = scaleRef.current;
     const kp = kpRef.current;
     let best: PointKey | null = null;
     let bestDist = HIT_RADIUS * HIT_RADIUS;
-    for (const k of Object.keys(kp) as PointKey[]) {
+
+    const keysToTest = diagramKeys ? Array.from(diagramKeys) : Object.keys(KEY_POINT_DEFS) as PointKey[];
+
+    for (const k of keysToTest) {
       const pt = kp[k];
+      if (!pt) continue;
       const dx = pt.x * scale - cx;
       const dy = pt.y * scale - cy;
       const d2 = dx * dx + dy * dy;
       if (d2 < bestDist) { bestDist = d2; best = k; }
     }
     return best;
-  };
+  }, [diagramKeys]);
 
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!editMode) return;
@@ -326,7 +339,7 @@ export function PointCanvas({
     dragRef.current = { key: nearest, startX: x, startY: y, moved: false };
     (e.target as HTMLCanvasElement).setPointerCapture(e.pointerId);
     e.preventDefault();
-  }, [editMode]);
+  }, [editMode, findNearest]);
 
   const onPointerMove = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     const { x, y } = canvasPos(e);
@@ -351,7 +364,7 @@ export function PointCanvas({
       hoveredKeyRef.current = nearest;
       setHoveredKey(nearest);
     }
-  }, [editMode, draw, onDragStart]);
+  }, [editMode, draw, onDragStart, findNearest]);
 
   const onPointerUp = useCallback(() => {
     if (!dragRef.current) return;
@@ -359,7 +372,6 @@ export function PointCanvas({
     if (moved) {
       onPointsChange({ ...kpRef.current });
     } else {
-      // It was a tap, not a drag — toggle selection
       onKeySelect(key === selectedEditKey ? null : key);
     }
     dragRef.current = null;
@@ -372,6 +384,18 @@ export function PointCanvas({
       setHoveredKey(null);
     }
   }, []);
+
+  const onDrop = (e: React.DragEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const key = e.dataTransfer.getData("text/plain") as PointKey;
+    const { x, y } = canvasPos(e);
+    const scale = scaleRef.current;
+    onPointDrop(key, x / scale, y / scale);
+  };
+
+  const onDragOver = (e: React.DragEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+  };
 
   const cursor = editMode
     ? dragRef.current?.moved ? "grabbing" : hoveredKey ? "grab" : "crosshair"
@@ -387,6 +411,8 @@ export function PointCanvas({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerLeave={onPointerLeave}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
       />
       {editMode && (
         <div className="canvas-legend">
