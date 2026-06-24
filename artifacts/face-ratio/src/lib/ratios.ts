@@ -232,8 +232,8 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const eyebrowTiltVal = canthalTilt(l_eyebrow_l, l_eyebrow_r);
   const eyebrowTiltIdeal = { min: 8.75, max: 8.75 };
 
-  const noseBridgeWidthToNoseHeightVal = dist(nose_bridge_l, nose_bridge_r) / noseHeight;
-  const noseBridgeWidthToNoseHeightIdeal = { min: 2.1, max: 2.1 };
+  const noseWidthToNoseBridgeWidthVal = noseWidth / dist(nose_bridge_l, nose_bridge_r);
+  const noseWidthToNoseBridgeWidthIdeal = { min: 2.1, max: 2.1 };
 
   const intercanthalToNoseWidthVal = intercanthalDist / noseWidth;
   const intercanthalToNoseWidthIdeal = { min: 1.1, max: 1.1 };
@@ -282,7 +282,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
     { key: "eyebrowLowsetness", name: "Eyebrow Lowsetness",     abbr: "EL",      value: eyebrowLowsetnessVal, ideal: eyebrowLowsetnessIdeal, unit: "×",     description: "Eyebrow bottom to eye top / Total Eye Width" },
     { key: "browLengthToFaceWidth", name: "Brow Length to Face Width", abbr: "BLFW",    value: browLengthToFaceWidthVal, ideal: browLengthToFaceWidthIdeal, unit: "×",     description: "Brow length / bizygomatic width" },
     { key: "eyebrowTilt", name: "Eyebrow Tilt",             abbr: "ET",      value: eyebrowTiltVal,     ideal: eyebrowTiltIdeal,    unit: "°",     description: "Angle of eyebrow axis" },
-    { key: "noseBridgeWidthToNoseHeight", name: "Nose Bridge Width to Nose Height", abbr: "NBWNH", value: noseBridgeWidthToNoseHeightVal, ideal: noseBridgeWidthToNoseHeightIdeal, unit: "×",     description: "Nose bridge width / nose height" },
+    { key: "noseWidthToNoseBridgeWidth", name: "Nose Width to Nose Bridge Width", abbr: "NWNBW", value: noseWidthToNoseBridgeWidthVal, ideal: noseWidthToNoseBridgeWidthIdeal, unit: "×",     description: "Nose width / nose bridge width" },
     { key: "intercanthalToNoseWidth", name: "Intercanthal to Nose Width", abbr: "ICNW",    value: intercanthalToNoseWidthVal, ideal: intercanthalToNoseWidthIdeal, unit: "×",     description: "Intercanthal distance / nose width" },
     { key: "icdToMouthWidthRatio", name: "ICD to Mouth Width Ratio", abbr: "IMWR",    value: icdToMouthWidthRatioVal, ideal: icdToMouthWidthRatioIdeal, unit: "×",     description: "Intercanthal distance / mouth width" },
     { key: "lowerThirdProportion", name: "Lower Third Proportion",    abbr: "L3P",     value: lowerThirdProportionVal, ideal: lowerThirdProportionIdeal, unit: "%",     description: "Subnasal to upper lip / subnasal to chin" },

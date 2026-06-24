@@ -482,18 +482,18 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
     ],
   },
 
-  noseBridgeWidthToNoseHeight: {
+  noseWidthToNoseBridgeWidth: {
     lines: [
-      { from: "nose_bridge_l", to: "nose_bridge_r", color: "#ffab00" },
-      { from: "nasion", to: "subnasale", color: "#00c3ff" },
+      { from: "nose_w_l", to: "nose_w_r", color: "#ffab00" },
+      { from: "nose_bridge_l", to: "nose_bridge_r", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
-      { text: "Nose Bridge Width to Nose Height", role: "label" },
+      { text: "Nose Width to Nose Bridge Width", role: "label" },
       { text: "=", role: "operator" },
-      { text: "Nose Bridge Width", role: "numerator" },
+      { text: "Nose Width", role: "numerator" },
       { text: "/", role: "operator" },
-      { text: "Nose Height", role: "denominator" },
+      { text: "Nose Bridge Width", role: "denominator" },
     ],
   },
 
