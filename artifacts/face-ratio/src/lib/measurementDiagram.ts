@@ -444,14 +444,14 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   eyebrowLowsetness: {
     lines: [
-      { from: "l_eyebrow_bot", to: "l_eye_top", color: "#ffab00" },
+      { from: "l_eyebrow_bot", to: "l_pupil", color: "#ffab00" },
       { from: "l_eye_lat", to: "l_eye_med", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
       { text: "Eyebrow Lowsetness", role: "label" },
       { text: "=", role: "operator" },
-      { text: "Eyebrow to Eye", role: "numerator" },
+      { text: "Eyebrow to Pupil", role: "numerator" },
       { text: "/", role: "operator" },
       { text: "Eye Width", role: "denominator" },
     ],

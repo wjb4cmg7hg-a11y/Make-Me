@@ -223,7 +223,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const cheekboneHeightVal = (1 - (verticalDist(l_pupil, zygo_l) / verticalDist(l_eye_top, nasion))) * 100;
   const cheekboneHeightIdeal = { min: 91.5, max: 91.5 };
 
-  const eyebrowLowsetnessVal = verticalDist(l_eyebrow_bot, l_eye_top) / eyeWidth;
+  const eyebrowLowsetnessVal = verticalDist(l_eyebrow_bot, l_pupil) / eyeWidth;
   const eyebrowLowsetnessIdeal = { min: 0.25, max: 0.25 };
 
   const browLengthToFaceWidthVal = dist(l_eyebrow_l, r_eyebrow_r) / bizygoWidth;
@@ -279,7 +279,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
     { key: "topThird", name: "Top Third",                 abbr: "T3",      value: topThirdVal,        ideal: topThirdIdeal,       unit: "%",     description: "Hairline to glabella / chin to hairline" },
     { key: "middleThird", name: "Middle Third",             abbr: "M3",      value: middleThirdVal,     ideal: middleThirdIdeal,    unit: "%",     description: "Glabella to subnasal / chin to hairline" },
     { key: "cheekboneHeight", name: "Cheekbone Height",         abbr: "CH",      value: cheekboneHeightVal, ideal: cheekboneHeightIdeal,unit: "%",     description: "(1 - (pupil height to Cheekbone Distance / Eye to Nose Base Distance)) * 100" },
-    { key: "eyebrowLowsetness", name: "Eyebrow Lowsetness",     abbr: "EL",      value: eyebrowLowsetnessVal, ideal: eyebrowLowsetnessIdeal, unit: "×",     description: "Eyebrow bottom to eye top / Total Eye Width" },
+    { key: "eyebrowLowsetness", name: "Eyebrow Lowsetness",     abbr: "EL",      value: eyebrowLowsetnessVal, ideal: eyebrowLowsetnessIdeal, unit: "×",     description: "Eyebrow bottom to pupil / Total Eye Width" },
     { key: "browLengthToFaceWidth", name: "Brow Length to Face Width", abbr: "BLFW",    value: browLengthToFaceWidthVal, ideal: browLengthToFaceWidthIdeal, unit: "×",     description: "Brow length / bizygomatic width" },
     { key: "eyebrowTilt", name: "Eyebrow Tilt",             abbr: "ET",      value: eyebrowTiltVal,     ideal: eyebrowTiltIdeal,    unit: "°",     description: "Angle of eyebrow axis" },
     { key: "noseWidthToNoseBridgeWidth", name: "Nose Width to Nose Bridge Width", abbr: "NWNBW", value: noseWidthToNoseBridgeWidthVal, ideal: noseWidthToNoseBridgeWidthIdeal, unit: "×",     description: "Nose width / nose bridge width" },
