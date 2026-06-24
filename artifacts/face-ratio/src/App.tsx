@@ -2,11 +2,11 @@ import { useState, useCallback, useRef } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UploadZone } from "./components/UploadZone";
 import { PointCanvas } from "./components/PointCanvas";
-import { NudgePanel } from "./components/NudgePanel";
+import { NudgeControl } from "./components/NudgeControl";
 import { RatioTable } from "./components/RatioTable";
 import { detectFaceLandmarks } from "./lib/mediapipe";
 import { computeRatios } from "./lib/ratios";
-import { extractKeyPoints } from "./lib/keyPoints";
+import { extractKeyPoints, KEY_POINT_DEFS } from "./lib/keyPoints";
 import { DIAGRAMS } from "./lib/measurementDiagram";
 import type { KeyPointPositions, PointKey } from "./lib/keyPoints";
 import type { Point } from "./lib/geometry";
@@ -150,7 +150,6 @@ function FaceAnalyzer() {
     : 0;
 
   const activeDiagram = selectedRatioKey ? (DIAGRAMS[selectedRatioKey] ?? null) : null;
-  const hasMoved = selectedEditKey ? movedKeys.current.has(selectedEditKey) : false;
 
   return (
     <div className="app">
@@ -257,14 +256,13 @@ function FaceAnalyzer() {
                 onKeySelect={handleKeySelect}
                 onDragStart={handleDragStart}
                 onPointsChange={handlePointsChange}
+                onPointDrop={() => {}}
               />
               {editMode && selectedEditKey && (
-                <NudgePanel
-                  selectedKey={selectedEditKey}
-                  hasMoved={hasMoved}
+                <NudgeControl
                   onNudge={handleNudge}
                   onReset={handleReset}
-                  onDeselect={() => setSelectedEditKey(null)}
+                  pointLabel={KEY_POINT_DEFS[selectedEditKey].label}
                 />
               )}
             </div>

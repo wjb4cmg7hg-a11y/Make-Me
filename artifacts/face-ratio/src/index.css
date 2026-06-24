@@ -393,8 +393,8 @@ body {
 }
 
 .ratio-bar__marker--ideal { background: var(--green); }
-.ratio-bar__marker--close { background: var(--amber); }
-.ratio-bar__marker--off   { background: var(--red); }
+.ratio-card__marker--close { background: var(--amber); }
+.ratio-card__marker--off   { background: var(--red); }
 
 .ratio-bar__labels {
   margin-top: 6px;
@@ -599,7 +599,7 @@ body {
 .nudge-action-btn:hover {
   background: rgba(255,255,255,0.1);
   color: var(--text);
-  border-color: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.22);
 }
 
 .nudge-action-btn--reset {
@@ -684,4 +684,71 @@ body {
   font-size: 0.72rem; color: var(--text-muted);
   width: 100%; margin-top: 2px;
   font-style: italic;
+}
+
+/* ─── Nudge Control (the new one) ──────────────────────────────── */
+.nudge-control {
+  margin-top: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-bright);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nudge-header {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.nudge-header strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.nudge-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  justify-items: center;
+}
+
+.nudge-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  font-size: 1.2rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.nudge-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-bright);
+  color: var(--text);
+}
+
+.nudge-btn:active {
+  transform: scale(0.94);
+  background: var(--bg-surface);
+}
+
+.nudge-btn.reset {
+  font-size: 1.5rem;
+  color: var(--gold-dim);
+}
+
+.nudge-btn.reset:hover {
+  color: var(--gold);
 }
