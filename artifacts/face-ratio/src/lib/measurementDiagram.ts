@@ -115,11 +115,11 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
       { text: "Angle at Mouth Center to Pupils", role: "angle" },
     ],
     lines: [
-      { from: "mouth_c", to: "l_pupil", role: "numerator",   label: "Mouth→L Pupil" },
-      { from: "mouth_c", to: "r_pupil", role: "denominator", label: "Mouth→R Pupil" },
+      { from: "lip_center", to: "l_pupil", role: "numerator",   label: "Mouth→L Pupil" },
+      { from: "lip_center", to: "r_pupil", role: "denominator", label: "Mouth→R Pupil" },
     ],
     angles: [
-      { vertex: "mouth_c", arm1: "l_pupil", arm2: "r_pupil", label: "EME" },
+      { vertex: "lip_center", arm1: "l_pupil", arm2: "r_pupil", label: "EME" },
     ],
   },
   jfa: {
@@ -174,11 +174,11 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     formulaParts: [
       { text: "Bizygomatic Width", role: "numerator" },
       { text: " ÷ ", role: "operator" },
-      { text: "Brow → Upper Lip", role: "denominator" },
+      { text: "Glabella → Upper Lip", role: "denominator" },
     ],
     lines: [
       { from: "zygo_r",   to: "zygo_l",  role: "numerator",   label: "Bizygomatic" },
-      { from: "brow_mid", to: "upper_lip_top", role: "denominator", label: "Midface Height" },
+      { from: "glabella", to: "upper_lip_top", role: "denominator", label: "Midface Height" },
     ],
     angles: [],
   },
@@ -219,7 +219,7 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     lines: [
         { from: "r_pupil", to: "l_pupil", role: "numerator", label: "Interpupil" },
-        { from: "pupil_mid", to: "upper_lip_top", role: "denominator", label: "Midface Ht." }
+        { from: "glabella", to: "upper_lip_top", role: "denominator", label: "Midface Ht." }
     ],
     angles: [],
   },
@@ -254,8 +254,8 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
       { text: "Upper Lip Height", role: "denominator" },
     ],
     lines: [
-      { from: "lower_lip_in",  to: "lower_lip_bot", role: "numerator",   label: "Lower Lip Ht." },
-      { from: "upper_lip_top", to: "upper_lip_in",  role: "denominator", label: "Upper Lip Ht." },
+      { from: "lip_center",  to: "lower_lip_bot", role: "numerator",   label: "Lower Lip Ht." },
+      { from: "upper_lip_top", to: "lip_center",  role: "denominator", label: "Upper Lip Ht." },
     ],
     angles: [],
   },

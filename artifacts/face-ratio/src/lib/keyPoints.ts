@@ -1,6 +1,6 @@
 import type { Landmarks } from "./landmarks";
-import type { Point } from "./geometry";
-import { getPoint, avgPoints, LM } from "./landmarks";
+import { avgPoints, getPoint, LM } from "./landmarks";
+import { midpoint, type Point } from "./geometry";
 
 export type PointGroup = "forehead" | "eyes" | "nose" | "mouth" | "face";
 
@@ -17,11 +17,10 @@ export type PointKey =
   | "alar_r" | "alar_l"
   | "nose_w_r" | "nose_w_l"
   | "subnasale"
-  | "upper_lip_top" | "upper_lip_in"
-  | "lower_lip_in" | "lower_lip_bot"
-  | "mouth_r" | "mouth_l";
+  | "upper_lip_top" | "lower_lip_bot"
+  | "mouth_r" | "mouth_l" | "lip_center";
 
-export type KeyPointPositions = Record<PointKey, Point>;
+export type KeyPointPositions = Partial<Record<PointKey, Point>>;
 
 export interface PointDef {
   label: string;
@@ -60,11 +59,10 @@ export const KEY_POINT_DEFS: Record<PointKey, PointDef> = {
   nose_w_l:      { label: "Nose Width L",   group: "nose",     color: "#fbbf24", description: "Widest left point of nose" },
   subnasale:     { label: "Subnasale",      group: "nose",     color: "#fbbf24", description: "Bottom center of nose — nose/philtrum junction" },
   upper_lip_top: { label: "Upper Lip Top",  group: "mouth",    color: "#f472b6", description: "Top of upper lip (philtrum base)" },
-  upper_lip_in:  { label: "Stomion Top",    group: "mouth",    color: "#f472b6", description: "Inner upper lip / stomion top" },
-  lower_lip_in:  { label: "Stomion Bot",    group: "mouth",    color: "#f472b6", description: "Inner lower lip / stomion bottom" },
   lower_lip_bot: { label: "Lower Lip Bot",  group: "mouth",    color: "#f472b6", description: "Bottom of lower lip" },
   mouth_r:       { label: "Mouth Corner R", group: "mouth",    color: "#f472b6", description: "Right mouth corner (cheilion)" },
   mouth_l:       { label: "Mouth Corner L", group: "mouth",    color: "#f472b6", description: "Left mouth corner (cheilion)" },
+  lip_center:    { label: "Lip Center",     group: "mouth",    color: "#f472b6", description: "Center of the lips" },
 };
 
 export const GROUP_LABEL: Record<PointGroup, string> = {
@@ -84,48 +82,66 @@ export const GROUP_COLOR: Record<PointGroup, string> = {
 };
 
 export function extractKeyPoints(
-  landmarks: Landmarks,
-  w: number,
-  h: number,
+    landmarks: Landmarks,
+    w: number,
+    h: number
 ): KeyPointPositions {
-  const p = (idx: number): Point => getPoint(landmarks, idx, w, h);
-  const avg = (indices: readonly number[]): Point =>
-    avgPoints(landmarks, indices, w, h);
+    const p = (idx: number): Point | null => getPoint(landmarks, idx, w, h);
+    const avg = (indices: readonly number[]): Point | null =>
+        avgPoints(landmarks, indices, w, h);
 
-  return {
-    hairline:      p(LM.HAIRLINE),
-    glabella:      p(LM.GLABELLA),
-    nasion:        p(LM.NASION),
-    temporal_r:    p(LM.TEMPORAL_R),
-    temporal_l:    p(LM.TEMPORAL_L),
-    ear_r:         p(LM.EAR_R),
-    ear_l:         p(LM.EAR_L),
-    zygo_r:        p(LM.ZYGO_R),
-    zygo_l:        p(LM.ZYGO_L),
-    gonia_r:       p(LM.GONIA_R),
-    gonia_l:       p(LM.GONIA_L),
-    chin:          p(LM.CHIN),
-    jaw_apex:      (() => { const c = p(LM.CHIN); return { x: c.x, y: c.y + h * 0.05 }; })(),
-    r_eye_lat:     p(LM.R_EYE_LATERAL),
-    r_eye_med:     p(LM.R_EYE_MEDIAL),
-    l_eye_lat:     p(LM.L_EYE_LATERAL),
-    l_eye_med:     p(LM.L_EYE_MEDIAL),
-    r_eye_top:     p(LM.R_EYE_TOP),
-    r_eye_bot:     p(LM.R_EYE_BOT),
-    l_eye_top:     p(LM.L_EYE_TOP),
-    l_eye_bot:     p(LM.L_EYE_BOT),
-    r_pupil:       avg(LM.R_IRIS_RING),
-    l_pupil:       avg(LM.L_IRIS_RING),
-    alar_r:        p(LM.ALAR_R),
-    alar_l:        p(LM.ALAR_L),
-    nose_w_r:      p(LM.NOSE_W_R),
-    nose_w_l:      p(LM.NOSE_W_L),
-    subnasale:     p(LM.SUBNASALE),
-    upper_lip_top: p(LM.UPPER_LIP_TOP),
-    upper_lip_in:  p(LM.UPPER_LIP_IN),
-    lower_lip_in:  p(LM.LOWER_LIP_IN),
-    lower_lip_bot: p(LM.LOWER_LIP_BOT),
-    mouth_r:       p(LM.MOUTH_R),
-    mouth_l:       p(LM.MOUTH_L),
-  };
+    const allKeyPoints: Record<PointKey, Point | null> = {
+        hairline: p(LM.HAIRLINE),
+        glabella: p(LM.GLABELLA),
+        nasion: p(LM.NASION),
+        temporal_r: p(LM.TEMPORAL_R),
+        temporal_l: p(LM.TEMPORAL_L),
+        ear_r: p(LM.EAR_R),
+        ear_l: p(LM.EAR_L),
+        zygo_r: p(LM.ZYGO_R),
+        zygo_l: p(LM.ZYGO_L),
+        gonia_r: p(LM.GONIA_R),
+        gonia_l: p(LM.GONIA_L),
+        chin: p(LM.CHIN),
+        jaw_apex: (() => {
+            const c = p(LM.CHIN);
+            return c ? { x: c.x, y: c.y + h * 0.05 } : null;
+        })(),
+        r_eye_lat: p(LM.R_EYE_LATERAL),
+        r_eye_med: p(LM.R_EYE_MEDIAL),
+        l_eye_lat: p(LM.L_EYE_LATERAL),
+        l_eye_med: p(LM.L_EYE_MEDIAL),
+        r_eye_top: p(LM.R_EYE_TOP),
+        r_eye_bot: p(LM.R_EYE_BOT),
+        l_eye_top: p(LM.L_EYE_TOP),
+        l_eye_bot: p(LM.L_EYE_BOT),
+        r_pupil: avg(LM.R_IRIS_RING),
+        l_pupil: avg(LM.L_IRIS_RING),
+        alar_r: p(LM.ALAR_R),
+        alar_l: p(LM.ALAR_L),
+        nose_w_r: p(LM.NOSE_W_R),
+        nose_w_l: p(LM.NOSE_W_L),
+        subnasale: p(LM.SUBNASALE),
+        upper_lip_top: p(LM.UPPER_LIP_TOP),
+        lower_lip_bot: p(LM.LOWER_LIP_BOT),
+        mouth_r: p(LM.MOUTH_R),
+        mouth_l: p(LM.MOUTH_L),
+        lip_center: null, // Calculated below
+    };
+
+    const ult = allKeyPoints.upper_lip_top;
+    const llb = allKeyPoints.lower_lip_bot;
+    if (ult && llb) {
+        allKeyPoints.lip_center = midpoint(ult, llb);
+    }
+
+    const placed: KeyPointPositions = {};
+    (Object.keys(allKeyPoints) as PointKey[]).forEach((key) => {
+        const point = allKeyPoints[key];
+        if (point && isFinite(point.x) && isFinite(point.y)) {
+            placed[key] = point;
+        }
+    });
+
+    return placed;
 }

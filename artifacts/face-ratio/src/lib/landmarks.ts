@@ -28,8 +28,6 @@ export const LM = {
 
   // Lips
   UPPER_LIP_TOP: 0,    // top of upper lip (philtrum junction)
-  UPPER_LIP_IN: 13,    // inner upper lip (stomion upper)
-  LOWER_LIP_IN: 14,    // inner lower lip (stomion lower)
   LOWER_LIP_BOT: 17,   // bottom of lower lip
   MOUTH_R: 61,         // right mouth corner
   MOUTH_L: 291,        // left mouth corner

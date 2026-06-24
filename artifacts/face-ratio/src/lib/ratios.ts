@@ -56,14 +56,10 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
     alar_r, alar_l,
     nose_w_r, nose_w_l,
     subnasale,
-    upper_lip_top, upper_lip_in,
-    lower_lip_in, lower_lip_bot,
+    upper_lip_top, lower_lip_bot,
     mouth_r, mouth_l,
+    lip_center
   } = kp;
-
-  const alarMid       = midpoint(alar_r, alar_l);
-  const pupilMid      = midpoint(r_pupil, l_pupil);
-  const mouthMid      = midpoint(mouth_r, mouth_l);
 
   const bizygoWidth   = dist(zygo_r, zygo_l);
   const rEyeWidth     = dist(r_eye_lat, r_eye_med);
@@ -118,10 +114,12 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const earVal   = eyeWidth / eyeH;
   const earIdeal = { min: 3, max: 3.6 };
 
-  // 7. EME
-  const halfIPD   = interpupilDist / 2;
-  const vertMouth = verticalDist(pupilMid, mouthMid);
-  const emeVal    = Math.atan2(vertMouth, halfIPD) * (180 / Math.PI);
+  // 7. EME — angle at lip_center between lines to each pupil
+  const emeV1x = r_pupil.x - lip_center.x;
+  const emeV1y = r_pupil.y - lip_center.y;
+  const emeV2x = l_pupil.x - lip_center.x;
+  const emeV2y = l_pupil.y - lip_center.y;
+  const emeVal   = angleBetweenVectors(emeV1x, emeV1y, emeV2x, emeV2y);
   const emeIdeal  = { min: 45, max: 49 };
 
   // 8. JFA — angle at jaw_apex (below chin) between lines from each gonion
@@ -186,8 +184,8 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const noseBizygoIdeal = { min: 3.85, max: 4.15 };
 
   // 19. Lower:Upper Lip
-  const upperLipH     = verticalDist(upper_lip_top, upper_lip_in);
-  const lowerLipH     = verticalDist(lower_lip_in, lower_lip_bot);
+  const upperLipH     = verticalDist(upper_lip_top, lip_center);
+  const lowerLipH     = verticalDist(lip_center, lower_lip_bot);
   const lipRatioVal   = lowerLipH / upperLipH;
   const lipRatioIdeal = { min: 1.4, max: 2 };
 
@@ -222,7 +220,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
     { key: "iaa",        name: "Infraorbital Alar Angle",   abbr: "IAA",     value: iaaVal,             ideal: iaaIdeal,            unit: "°",     description: "Angle at subnasale formed by lines to lateral canthi" },
     { key: "icd",        name: "Intercanthal Ratio",        abbr: "ICD",     value: icdVal,             ideal: icdIdeal,            unit: "×",     description: "Eye width divided by intercanthal distance" },
     { key: "ear",        name: "Eye Aspect Ratio",          abbr: "EAR",     value: earVal,             ideal: earIdeal,            unit: "×",     description: "Horizontal eye length divided by vertical height" },
-    { key: "eme",        name: "Eye-Mouth-Eye Angle",       abbr: "EME",     value: emeVal,             ideal: emeIdeal,            unit: "°",     description: "Angle from pupil midpoint down to mouth center" },
+    { key: "eme",        name: "Eye-Mouth-Eye Angle",       abbr: "EME",     value: emeVal,             ideal: emeIdeal,            unit: "°",     description: "Angle at lip center between lines to each pupil" },
     { key: "jfa",        name: "Jaw Frontal Angle",         abbr: "JFA",     value: jfaVal,             ideal: jfaIdeal,            unit: "°",     description: "Angle at chin between the two mandible lines" },
     { key: "lff",        name: "Lower Full Face Ratio",     abbr: "LFF",     value: lffVal,             ideal: lffIdeal,            unit: "%",     description: "Nasion-to-chin as % of total face height" },
     { key: "jaww",       name: "Jaw Width",                 abbr: "JW",      value: jawWidthVal,        ideal: jawWidthIdeal,       unit: "×",     description: "Bigonial width divided by bizygomatic width" },
@@ -242,9 +240,14 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
     { key: "forehead",   name: "Forehead Length",           abbr: "FHL",     value: foreheadLengthVal,  ideal: foreheadLengthIdeal, unit: "×",     description: "Temporal width ÷ hairline-to-glabella height" },
   ];
 
-  return raw.map((r) => ({
-    ...r,
-    score: scoreResult(r.value, r.ideal),
-    deviation: deviationPct(r.value, r.ideal),
-  }));
+  return raw.map((r) => {
+    if (r.value === null || !isFinite(r.value)) {
+      return { ...r, value: null, score: "unknown", deviation: null };
+    }
+    return {
+      ...r,
+      score: scoreResult(r.value, r.ideal),
+      deviation: deviationPct(r.value, r.ideal),
+    };
+  });
 }
