@@ -21,7 +21,7 @@ interface PointCanvasProps {
   onPointDrop: (key: PointKey, x: number, y: number) => void;
 }
 
-const DOT_RADIUS = 6;
+const DOT_RADIUS = 4;
 const HIT_RADIUS = 18;
 const DRAG_THRESHOLD = 5; // px in canvas space before we consider it a drag
 
@@ -229,7 +229,7 @@ export function PointCanvas({
         const isSelected = selectedEditKey === key;
         const isHovered  = hoveredKeyRef.current === key;
         const isDragging = dragRef.current?.key === key;
-        const r = isDragging ? DOT_RADIUS + 3 : isSelected ? DOT_RADIUS + 2 : isHovered ? DOT_RADIUS + 1 : DOT_RADIUS;
+        const r = isDragging ? 2 : isSelected ? 2 : isHovered ? 3 : 4;
 
         ctx.save();
         ctx.shadowColor = def.color;
@@ -274,9 +274,9 @@ export function PointCanvas({
       } else { // Not edit mode, but diagram is active
         ctx.save();
         ctx.shadowColor = def.color; ctx.shadowBlur = 10;
-        ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+        ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fill();
-        ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+        ctx.beginPath(); ctx.arc(cx, cy, 2, 0, Math.PI * 2);
         ctx.fillStyle = def.color; ctx.fill();
         ctx.shadowBlur = 0; ctx.restore();
       }
