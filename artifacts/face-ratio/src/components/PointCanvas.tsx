@@ -3,8 +3,7 @@ import type { Landmarks } from "../lib/landmarks";
 import type { KeyPointPositions, PointKey } from "../lib/keyPoints";
 import { KEY_POINT_DEFS } from "../lib/keyPoints";
 import { DRAW_CONNECTIONS } from "../lib/drawConnections";
-import type { RatioDiagram } from "../lib/measurementDiagram";
-import { ROLE_COLOR } from "../lib/measurementDiagram";
+import type { MeasurementDiagram } from "../lib/measurementDiagram";
 
 interface PointCanvasProps {
   imageUrl: string;
@@ -13,7 +12,7 @@ interface PointCanvasProps {
   imageWidth: number;
   imageHeight: number;
   editMode: boolean;
-  activeDiagram: RatioDiagram | null;
+  activeDiagram: MeasurementDiagram | null;
   selectedEditKey: PointKey | null;
   onKeySelect: (key: PointKey | null) => void;
   onDragStart: (key: PointKey) => void;
@@ -36,14 +35,14 @@ function drawDoubleArrow(
 ) {
   const angle = Math.atan2(by - ay, bx - ax);
   const len = Math.sqrt((bx - ax) ** 2 + (by - ay) ** 2);
-  const aSize = Math.min(9, len * 0.15);
+  const aSize = Math.min(10, len * 0.15);
 
   ctx.save();
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
   ctx.lineWidth = lineWidth;
   ctx.shadowColor = color;
-  ctx.shadowBlur = 6;
+  ctx.shadowBlur = 8;
 
   ctx.beginPath();
   ctx.moveTo(ax, ay);
@@ -54,12 +53,12 @@ function drawDoubleArrow(
     ctx.beginPath();
     ctx.moveTo(px2, py2);
     ctx.lineTo(
-      px2 + dir * aSize * Math.cos(angle + 0.38 + Math.PI),
-      py2 + dir * aSize * Math.sin(angle + 0.38 + Math.PI),
+      px2 + dir * aSize * Math.cos(angle + 0.4 + Math.PI),
+      py2 + dir * aSize * Math.sin(angle + 0.4 + Math.PI),
     );
     ctx.lineTo(
-      px2 + dir * aSize * Math.cos(angle - 0.38 + Math.PI),
-      py2 + dir * aSize * Math.sin(angle - 0.38 + Math.PI),
+      px2 + dir * aSize * Math.cos(angle - 0.4 + Math.PI),
+      py2 + dir * aSize * Math.sin(angle - 0.4 + Math.PI),
     );
     ctx.closePath();
     ctx.fill();
@@ -80,15 +79,15 @@ function drawLineLabel(
   const my = (ay + by) / 2;
   const angle = Math.atan2(by - ay, bx - ax);
   ctx.save();
-  ctx.font = "bold 11px Inter, sans-serif";
+  ctx.font = "bold 12px Inter, sans-serif";
   const tw = ctx.measureText(label).width;
-  const perpX = -Math.sin(angle) * 14;
-  const perpY = Math.cos(angle) * 14;
+  const perpX = -Math.sin(angle) * 16;
+  const perpY = Math.cos(angle) * 16;
   const lx = mx + perpX - tw / 2;
   const ly = my + perpY;
-  ctx.fillStyle = "rgba(0,0,0,0.75)";
+  ctx.fillStyle = "rgba(0,0,0,0.8)";
   ctx.beginPath();
-  ctx.roundRect(lx - 4, ly - 11, tw + 8, 16, 3);
+  ctx.roundRect(lx - 5, ly - 12, tw + 10, 18, 4);
   ctx.fill();
   ctx.fillStyle = color;
   ctx.fillText(label, lx, ly);
@@ -105,27 +104,30 @@ function drawAngleArc(
 ) {
   const angle1 = Math.atan2(ay - vy, ax - vx);
   const angle2 = Math.atan2(by - vy, bx - vx);
-  const r = 24;
+  const r = 28;
   ctx.save();
   ctx.strokeStyle = color;
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 2;
   ctx.shadowColor = color;
-  ctx.shadowBlur = 4;
+  ctx.shadowBlur = 6;
   ctx.beginPath();
   ctx.arc(vx, vy, r, angle1, angle2, false);
   ctx.stroke();
-  const midAngle = (angle1 + angle2) / 2;
-  const lx = vx + (r + 16) * Math.cos(midAngle);
-  const ly = vy + (r + 16) * Math.sin(midAngle);
-  ctx.font = "bold 11px Inter, sans-serif";
-  const tw = ctx.measureText(label).width;
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = "rgba(0,0,0,0.75)";
-  ctx.beginPath();
-  ctx.roundRect(lx - tw / 2 - 4, ly - 11, tw + 8, 16, 3);
-  ctx.fill();
-  ctx.fillStyle = color;
-  ctx.fillText(label, lx - tw / 2, ly);
+
+  if (label) {
+    const midAngle = (angle1 + angle2) / 2;
+    const lx = vx + (r + 18) * Math.cos(midAngle);
+    const ly = vy + (r + 18) * Math.sin(midAngle);
+    ctx.font = "bold 12px Inter, sans-serif";
+    const tw = ctx.measureText(label).width;
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(0,0,0,0.8)";
+    ctx.beginPath();
+    ctx.roundRect(lx - tw / 2 - 5, ly - 12, tw + 10, 18, 4);
+    ctx.fill();
+    ctx.fillStyle = color;
+    ctx.fillText(label, lx - tw / 2, ly);
+  }
   ctx.restore();
 }
 
@@ -159,10 +161,17 @@ export function PointCanvas({
 
   const diagramKeys = useMemo(() => {
     if (!activeDiagram) return null;
-    return new Set<PointKey>([
-      ...activeDiagram.lines.flatMap((l) => [l.from, l.to]),
-      ...activeDiagram.angles.flatMap((a) => [a.vertex, a.arm1, a.arm2]),
-    ]);
+    const keys = new Set<PointKey>();
+    activeDiagram.lines.forEach(l => {
+      keys.add(l.from);
+      keys.add(l.to);
+    });
+    activeDiagram.angles.forEach(a => {
+      keys.add(a.p1);
+      keys.add(a.p2);
+      keys.add(a.p3);
+    });
+    return keys;
   }, [activeDiagram]);
 
   const draw = useCallback(() => {
@@ -181,9 +190,9 @@ export function PointCanvas({
     const H = imageHeight;
 
     ctx.strokeStyle = activeDiagram
-      ? "rgba(139,195,160,0.12)"
-      : "rgba(139,195,160,0.28)";
-    ctx.lineWidth = 0.7;
+      ? "rgba(139,195,160,0.15)"
+      : "rgba(139,195,160,0.35)";
+    ctx.lineWidth = 0.8;
     for (const [a, b] of DRAW_CONNECTIONS) {
       const la = landmarks[a]; const lb = landmarks[b];
       if (!la || !lb) continue;
@@ -202,16 +211,17 @@ export function PointCanvas({
         return { x: kp[key]!.x * scale, y: kp[key]!.y * scale };
       };
       for (const line of activeDiagram.lines) {
-        const from = px(line.from); const to = px(line.to);
-        const color = ROLE_COLOR[line.role];
-        drawDoubleArrow(ctx, from.x, from.y, to.x, to.y, color, line.role === "ref" ? 1.5 : 2.5);
-        if (line.label) {
-          drawLineLabel(ctx, from.x, from.y, to.x, to.y, line.label, color);
-        }
+        const from = px(line.from); 
+        const to = px(line.to);
+        const color = line.color || "#ffffff";
+        drawDoubleArrow(ctx, from.x, from.y, to.x, to.y, color, 3);
       }
       for (const ang of activeDiagram.angles) {
-        const v = px(ang.vertex); const a1 = px(ang.arm1); const a2 = px(ang.arm2);
-        drawAngleArc(ctx, v.x, v.y, a1.x, a1.y, a2.x, a2.y, "#a78bfa", ang.label);
+        const p1 = px(ang.p1);
+        const p2 = px(ang.p2);
+        const p3 = px(ang.p3);
+        const color = ang.color || "#ffffff";
+        drawAngleArc(ctx, p2.x, p2.y, p1.x, p1.y, p3.x, p3.y, color, "");
       }
     }
 
@@ -229,25 +239,25 @@ export function PointCanvas({
         const isSelected = selectedEditKey === key;
         const isHovered  = hoveredKeyRef.current === key;
         const isDragging = dragRef.current?.key === key;
-        const r = isDragging ? 2 : isSelected ? 2 : isHovered ? 3 : 4;
+        const r = isDragging ? 2.5 : isSelected ? 2.5 : isHovered ? 3.5 : 4.5;
 
         ctx.save();
         ctx.shadowColor = def.color;
-        ctx.shadowBlur = isSelected ? 16 : isHovered || isDragging ? 10 : 4;
+        ctx.shadowBlur = isSelected ? 18 : isHovered || isDragging ? 12 : 5;
 
         if (isSelected) {
           ctx.beginPath();
-          ctx.arc(cx, cy, r + 5, 0, Math.PI * 2);
+          ctx.arc(cx, cy, r + 6, 0, Math.PI * 2);
           ctx.strokeStyle = def.color;
-          ctx.globalAlpha = 0.4;
-          ctx.lineWidth = 2;
+          ctx.globalAlpha = 0.5;
+          ctx.lineWidth = 2.5;
           ctx.stroke();
           ctx.globalAlpha = 1;
         }
 
         ctx.beginPath();
-        ctx.arc(cx, cy, r + 2, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0,0,0,0.55)";
+        ctx.arc(cx, cy, r + 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
         ctx.fill();
 
         ctx.beginPath();
@@ -260,23 +270,23 @@ export function PointCanvas({
 
         if (isSelected || isHovered || isDragging) {
           const label = def.label;
-          ctx.font = "bold 11px Inter, sans-serif";
+          ctx.font = "bold 12px Inter, sans-serif";
           const tw = ctx.measureText(label).width;
           const lx = cx - tw / 2;
-          const ly = cy - r - 14;
-          ctx.fillStyle = "rgba(0,0,0,0.8)";
+          const ly = cy - r - 16;
+          ctx.fillStyle = "rgba(0,0,0,0.85)";
           ctx.beginPath();
-          ctx.roundRect(lx - 5, ly - 11, tw + 10, 16, 4);
+          ctx.roundRect(lx - 6, ly - 13, tw + 12, 18, 5);
           ctx.fill();
           ctx.fillStyle = def.color;
           ctx.fillText(label, lx, ly);
         }
       } else { // Not edit mode, but diagram is active
         ctx.save();
-        ctx.shadowColor = def.color; ctx.shadowBlur = 10;
-        ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fill();
-        ctx.beginPath(); ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+        ctx.shadowColor = def.color; ctx.shadowBlur = 12;
+        ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.fill();
+        ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
         ctx.fillStyle = def.color; ctx.fill();
         ctx.shadowBlur = 0; ctx.restore();
       }
