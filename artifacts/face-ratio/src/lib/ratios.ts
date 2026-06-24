@@ -79,7 +79,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
     r_eye_top, r_eye_bot, l_eye_top, l_eye_bot,
     r_eyebrow_l, r_eyebrow_r, r_eyebrow_top, r_eyebrow_bot,
     l_eyebrow_l, l_eyebrow_r, l_eyebrow_top, l_eyebrow_bot,
-    r_pupil, l_pupil,
+    r_pupil, l_pupil, mid_pupil,
     alar_r, alar_l,
     nose_w_r, nose_w_l, subnasale,
     nose_bridge_l, nose_bridge_r,
@@ -101,7 +101,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const neckWidth = dist(neck_l, neck_r);
   const totalFaceHeight = verticalDist(hairline, chin);
   const fwhrMidfaceHeight = verticalDist(midpoint(r_eye_top, l_eye_top), upper_lip_top);
-  const midMidfaceHeight = verticalDist(midpoint(r_pupil, l_pupil), upper_lip_top);
+  const midMidfaceHeight = verticalDist(mid_pupil, upper_lip_top);
   const noseHeight = verticalDist(nasion, subnasale);
   const nasionToChin = verticalDist(nasion, chin);
   const philtrumHeight = verticalDist(subnasale, upper_lip_top);
@@ -220,7 +220,9 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const middleThirdVal = (verticalDist(glabella, subnasale) / totalFaceHeight) * 100;
   const middleThirdIdeal = { min: 32.4, max: 32.4 };
 
-  const cheekboneHeightVal = (1 - (verticalDist(l_pupil, zygo_l) / verticalDist(l_eye_top, nasion))) * 100;
+  const rCheekboneVal = (1 - (verticalDist(zygo_r, mid_pupil) / verticalDist(lip_center, mid_pupil))) * 100;
+  const lCheekboneVal = (1 - (verticalDist(zygo_l, mid_pupil) / verticalDist(lip_center, mid_pupil))) * 100;
+  const cheekboneHeightVal = (rCheekboneVal + lCheekboneVal) / 2;
   const cheekboneHeightIdeal = { min: 91.5, max: 91.5 };
 
   const eyebrowLowsetnessVal = verticalDist(l_eyebrow_bot, l_pupil) / eyeWidth;
@@ -280,7 +282,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
     { key: "lowerThird", name: "Lower Third",               abbr: "L3",      value: lowerThirdVal,      ideal: lowerThirdIdeal,     unit: "%",     description: "Chin to subnasal / chin to hairline" },
     { key: "topThird", name: "Top Third",                 abbr: "T3",      value: topThirdVal,        ideal: topThirdIdeal,       unit: "%",     description: "Hairline to glabella / chin to hairline" },
     { key: "middleThird", name: "Middle Third",             abbr: "M3",      value: middleThirdVal,     ideal: middleThirdIdeal,    unit: "%",     description: "Glabella to subnasal / chin to hairline" },
-    { key: "cheekboneHeight", name: "Cheekbone Height",         abbr: "CH",      value: cheekboneHeightVal, ideal: cheekboneHeightIdeal,unit: "%",     description: "(1 - (pupil height to Cheekbone Distance / Eye to Nose Base Distance)) * 100" },
+    { key: "cheekboneHeight", name: "Cheekbone Height",         abbr: "CH",      value: cheekboneHeightVal, ideal: cheekboneHeightIdeal,unit: "%",     description: "(1 - (Vertical distance from Zygo to Mid-Pupil / Vertical distance from Lip Center to Mid-Pupil)) * 100" },
     { key: "eyebrowLowsetness", name: "Eyebrow Lowsetness",     abbr: "EL",      value: eyebrowLowsetnessVal, ideal: eyebrowLowsetnessIdeal, unit: "×",     description: "Eyebrow bottom to pupil / Total Eye Width" },
     { key: "browLengthToFaceWidth", name: "Brow Length to Face Width", abbr: "BLFW",    value: browLengthToFaceWidthVal, ideal: browLengthToFaceWidthIdeal, unit: "×",     description: "Brow length / bizygomatic width" },
     { key: "eyebrowTilt", name: "Eyebrow Tilt",             abbr: "ET",      value: eyebrowTiltVal,     ideal: eyebrowTiltIdeal,    unit: "°",     description: "Angle of eyebrow axis" },

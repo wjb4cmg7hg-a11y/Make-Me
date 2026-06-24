@@ -433,8 +433,9 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   cheekboneHeight: {
     lines: [
-      { from: "l_pupil", to: "zygo_l", color: "#ffab00", dashed: true },
-      { from: "l_eye_top", to: "nasion", color: "#00c3ff", dashed: true },
+      { from: "zygo_l", to: "mid_pupil", color: "#ffab00", dashed: true },
+      { from: "lip_center", to: "mid_pupil", color: "#00c3ff", dashed: true },
+      { from: "zygo_r", to: "mid_pupil", color: "#ffab00", dashed: true },
     ],
     angles: [],
     formulaParts: [
