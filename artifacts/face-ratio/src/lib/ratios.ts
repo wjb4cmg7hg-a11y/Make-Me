@@ -19,24 +19,47 @@ export interface RatioResult {
   value: number | null;
   ideal: RatioIdeal;
   unit: string;
-  score: "ideal" | "close" | "off" | "unknown";
+  score: number | null;
   deviation: number | null;
   description: string;
 }
 
-function scoreResult(value: number, ideal: RatioIdeal): RatioResult["score"] {
-  if (value >= ideal.min && value <= ideal.max) return "ideal";
+function scoreResult(value: number, ideal: RatioIdeal): number {
+  // 1. If inside the ideal range, score is 10.
+  if (value >= ideal.min && value <= ideal.max) return 10;
+
   const range = ideal.max - ideal.min;
-  const dev =
-    value < ideal.min
-      ? (ideal.min - value) / range
-      : (value - ideal.max) / range;
-  return dev <= 0.15 ? "close" : "off";
+
+  // Handle ratios with a single-point ideal (range = 0)
+  if (range === 0) {
+    const base = ideal.min === 0 ? 1 : ideal.min;
+    const distance = Math.abs(value - ideal.min);
+    // A deviation of 10% of the ideal value drops score to 7.5
+    const score = 10 - 25 * (distance / base);
+    const finalScore = Math.max(0, score);
+    return Math.round(finalScore * 10) / 10;
+  }
+
+  // 2. Calculate the absolute distance from the nearest ideal boundary.
+  const distance = value < ideal.min ? ideal.min - value : value - ideal.max;
+
+  // 3. Calculate score based on a calibrated penalty.
+  // A deviation of 1.6x the ideal range drops the score by 3 points (to 7.0).
+  const penaltyMultiplier = 3 / 1.6; // This is 1.875
+  const score = 10 - penaltyMultiplier * (distance / range);
+
+  // 4. Clamp the score between 0 and 10 and round it to one decimal place.
+  const finalScore = Math.max(0, score);
+  return Math.round(finalScore * 10) / 10;
 }
 
 function deviationPct(value: number, ideal: RatioIdeal): number {
   if (value >= ideal.min && value <= ideal.max) return 0;
   const range = ideal.max - ideal.min;
+  if (range === 0) {
+      if (ideal.min === 0) return value * 100; // special case, it's just a % deviation
+      return (Math.abs(value - ideal.min) / ideal.min) * 100;
+  }
   return value < ideal.min
     ? ((ideal.min - value) / range) * 100
     : ((value - ideal.max) / range) * 100;
@@ -242,7 +265,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
 
   return raw.map((r) => {
     if (r.value === null || !isFinite(r.value)) {
-      return { ...r, value: null, score: "unknown", deviation: null };
+      return { ...r, value: null, score: null, deviation: null };
     }
     return {
       ...r,
