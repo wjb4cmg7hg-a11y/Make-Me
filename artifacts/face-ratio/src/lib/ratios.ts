@@ -148,7 +148,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const jfaIdeal = { min: 88, max: 92 };
 
   const lffVal = (nasionToChin / totalFaceHeight) * 100;
-  const lffIdeal = { min: 67, max: 71 };
+  const lffIdeal = { min: 62, max: 68 };
 
   const jawWidthVal = bigonialWidth / bizygoWidth;
   const jawWidthIdeal = { min: 0.86, max: 0.92 };
