@@ -229,7 +229,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const browLengthToFaceWidthVal = dist(l_eyebrow_l, r_eyebrow_r) / bizygoWidth;
   const browLengthToFaceWidthIdeal = { min: 0.75, max: 0.75 };
 
-  const eyebrowTiltVal = canthalTilt(l_eyebrow_l, l_eyebrow_r);
+  const eyebrowTiltVal = canthalTilt(l_eyebrow_r, l_eyebrow_l);
   const eyebrowTiltIdeal = { min: 8.75, max: 8.75 };
 
   const noseWidthToNoseBridgeWidthVal = noseWidth / dist(nose_bridge_l, nose_bridge_r);
