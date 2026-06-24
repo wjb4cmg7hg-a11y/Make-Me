@@ -25,30 +25,32 @@ export interface RatioResult {
 }
 
 function scoreResult(value: number, ideal: RatioIdeal): number {
-  // 1. If inside the ideal range, score is 10.
-  if (value >= ideal.min && value <= ideal.max) return 10;
-
   const range = ideal.max - ideal.min;
 
-  // Handle ratios with a single-point ideal (range = 0)
+  // Handle single-point ideals (range === 0)
   if (range === 0) {
-    const base = ideal.min === 0 ? 1 : ideal.min;
     const distance = Math.abs(value - ideal.min);
+    const base = ideal.min === 0 ? 1 : ideal.min; // Avoid division by zero
     // A deviation of 10% of the ideal value drops score to 7.5
     const score = 10 - 25 * (distance / base);
     const finalScore = Math.max(0, score);
     return Math.round(finalScore * 10) / 10;
   }
 
-  // 2. Calculate the absolute distance from the nearest ideal boundary.
-  const distance = value < ideal.min ? ideal.min - value : value - ideal.max;
+  // For ranged ideals, score is 10 at the midpoint, and 9 at the edges of the ideal range.
+  const midpointValue = (ideal.min + ideal.max) / 2;
+  const distanceFromMidpoint = Math.abs(value - midpointValue);
 
-  // 3. Calculate score based on a calibrated penalty.
-  // A deviation of 1.6x the ideal range drops the score by 3 points (to 7.0).
-  const penaltyMultiplier = 3 / 1.6; // This is 1.875
-  const score = 10 - penaltyMultiplier * (distance / range);
+  // We want the score to be 9 at the boundary of the ideal range.
+  // At the boundary, `distanceFromMidpoint` is `range / 2`.
+  // The formula is `score = 10 - C * (distanceFromMidpoint / range)`.
+  // We want `9 = 10 - C * ((range / 2) / range)`.
+  // This simplifies to `9 = 10 - C * 0.5`.
+  // So, `1 = C * 0.5`, which means `C = 2`.
+  const C = 2;
+  const score = 10 - C * (distanceFromMidpoint / range);
 
-  // 4. Clamp the score between 0 and 10 and round it to one decimal place.
+  // Clamp the score and round it.
   const finalScore = Math.max(0, score);
   return Math.round(finalScore * 10) / 10;
 }
