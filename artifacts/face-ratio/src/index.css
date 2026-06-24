@@ -235,8 +235,15 @@ body {
   align-items: start;
 }
 
+.done-left {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 80px;
+}
+
 @media (max-width: 900px) {
   .done-layout { grid-template-columns: 1fr; }
+  .done-left { position: static; }
 }
 
 /* ─── Canvas ──────────────────────────────────────────────────── */
