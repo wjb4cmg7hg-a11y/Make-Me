@@ -30,9 +30,11 @@ export interface KeyPointPositions {
   r_eye_bot:     Point;
   l_eye_top:     Point;
   l_eye_bot:     Point;
+  mid_eyebrow:   Point;
 
   r_pupil:       Point;
   l_pupil:       Point;
+  mid_pupil:     Point;
 
   alar_r:        Point;
   alar_l:        Point;
@@ -68,8 +70,10 @@ export const KEY_POINT_DEFS: Record<PointKey, { label: string; color: string }> 
   r_eye_bot:     { label: "Lower Eye (R)",   color: "#34d399" },
   l_eye_top:     { label: "Upper Eye (L)",   color: "#34d399" },
   l_eye_bot:     { label: "Lower Eye (L)",   color: "#34d399" },
+  mid_eyebrow:   { label: "Mid Eyebrow",     color: "#34d399" },
   r_pupil:       { label: "Pupil (R)",       color: "#34d399" },
   l_pupil:       { label: "Pupil (L)",       color: "#34d399" },
+  mid_pupil:     { label: "Mid Pupil",       color: "#34d399" },
   upper_lip_top:{ label: "Upper Lip",      color: "#f472b6" },
   lower_lip_bot:{ label: "Lower Lip",      color: "#f472b6" },
   mouth_r:       { label: "Mouth Corner (R)",color: "#f472b6" },
@@ -96,16 +100,20 @@ export function extractKeyPoints(
   const avg = (indices: readonly number[]) => avgPoints(landmarks, indices, imgW, imgH);
 
   const chin = get(LM.CHIN);
-  const gonia_r = get(LM.GONIA_R);
-  const gonia_l = get(LM.GONIA_L);
+  const jaw_r = get(LM.JAW_R);
+  const jaw_l = get(LM.JAW_L);
+  const r_pupil = avg(LM.R_IRIS_RING);
+  const l_pupil = avg(LM.L_IRIS_RING);
+  const r_eye_top = get(LM.R_EYE_TOP);
+  const l_eye_top = get(LM.L_EYE_TOP);
 
   // To get a consistent jaw frontal angle, we need to create a
   // stable apex point below the chin.
   const jaw_apex = {
     x: chin.x,
-    // Use the vertical distance from gonia to chin as a heuristic for how far down
+    // Use the vertical distance from the jaw to the chin as a heuristic for how far down
     // the apex should be.
-    y: chin.y + 0.5 * (Math.abs(gonia_r.y - chin.y) + Math.abs(gonia_l.y - chin.y)),
+    y: chin.y + 0.5 * (Math.abs(jaw_r.y - chin.y) + Math.abs(jaw_l.y - chin.y)),
   }
 
   return {
@@ -118,10 +126,10 @@ export function extractKeyPoints(
     ear_l:         get(LM.EAR_L),
     zygo_r:        get(LM.ZYGO_R),
     zygo_l:        get(LM.ZYGO_L),
-    gonia_r:       gonia_r,
-    gonia_l:       gonia_l,
-    jaw_r:         get(LM.JAW_R),
-    jaw_l:         get(LM.JAW_L),
+    gonia_r:       get(LM.GONIA_R),
+    gonia_l:       get(LM.GONIA_L),
+    jaw_r:         jaw_r,
+    jaw_l:         jaw_l,
     chin:          chin,
     jaw_apex:      jaw_apex,
 
@@ -129,13 +137,15 @@ export function extractKeyPoints(
     r_eye_med:     get(LM.R_EYE_MEDIAL),
     l_eye_lat:     get(LM.L_EYE_LATERAL),
     l_eye_med:     get(LM.L_EYE_MEDIAL),
-    r_eye_top:     get(LM.R_EYE_TOP),
+    r_eye_top:     r_eye_top,
     r_eye_bot:     get(LM.R_EYE_BOT),
-    l_eye_top:     get(LM.L_EYE_TOP),
+    l_eye_top:     l_eye_top,
     l_eye_bot:     get(LM.L_EYE_BOT),
+    mid_eyebrow:   { x: (r_eye_top.x + l_eye_top.x) / 2, y: (r_eye_top.y + l_eye_top.y) / 2 },
 
-    r_pupil:       avg(LM.R_IRIS_RING),
-    l_pupil:       avg(LM.L_IRIS_RING),
+    r_pupil:       r_pupil,
+    l_pupil:       l_pupil,
+    mid_pupil:     { x: (r_pupil.x + l_pupil.x) / 2, y: (r_pupil.y + l_pupil.y) / 2 },
 
     alar_r:        get(LM.ALAR_R),
     alar_l:        get(LM.ALAR_L),

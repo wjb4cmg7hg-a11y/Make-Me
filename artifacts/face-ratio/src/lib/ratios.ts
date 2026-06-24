@@ -98,12 +98,11 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const temporalWidth = dist(temporal_r, temporal_l);
 
   const totalFaceHeight    = verticalDist(hairline, chin);
-  const glabellaToUpperLip = verticalDist(glabella, upper_lip_top);
   const hairlineToGlabella = verticalDist(hairline, glabella);
-  // Nose height: nasion down to subnasale
+  const fwhrMidfaceHeight  = verticalDist(midpoint(r_eye_top, l_eye_top), upper_lip_top);
+  const midMidfaceHeight   = verticalDist(midpoint(r_pupil, l_pupil), upper_lip_top);
   const noseHeight         = verticalDist(nasion, subnasale);
   const nasionToChin       = verticalDist(nasion, chin);
-  // Philtrum: subnasale down to top of upper lip
   const philtrumHeight     = verticalDist(subnasale, upper_lip_top);
 
   // 1. ESR
@@ -185,7 +184,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const fifthsIdeal = { min: 0, max: 5 };
 
   // 13. FWHR
-  const fwhrVal   = bizygoWidth / glabellaToUpperLip;
+  const fwhrVal   = bizygoWidth / fwhrMidfaceHeight;
   const fwhrIdeal = { min: 1.9, max: 2.05 };
 
   // 14. TFWHR
@@ -197,7 +196,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const iaaJfaIdeal = { min: 0, max: 3 };
 
   // 16. Midface Ratio
-  const midfaceVal   = interpupilDist / glabellaToUpperLip;
+  const midfaceVal   = interpupilDist / midMidfaceHeight;
   const midfaceIdeal = { min: 0.96, max: 1.02 };
 
   // 17. Nose H:W — use subnasale for nose height
@@ -251,10 +250,10 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
     { key: "jaww",       name: "Jaw Width",                 abbr: "JW",      value: jawWidthVal,        ideal: jawWidthIdeal,       unit: "×",     description: "Bigonial width divided by bizygomatic width" },
     { key: "thirds",     name: "Facial Thirds",             abbr: "F3",      value: thirdsVal,          ideal: thirdsIdeal,         unit: "% dev", description: "Avg deviation from ideal thirds (33 / 31 / 36)" },
     { key: "fifths",     name: "Facial Fifths",             abbr: "F5",      value: fifthsVal,          ideal: fifthsIdeal,         unit: "% dev", description: "Avg deviation from equal facial fifths" },
-    { key: "fwhr",       name: "Face Width-Height Ratio",   abbr: "FWHR",    value: fwhrVal,            ideal: fwhrIdeal,           unit: "×",     description: "Bizygomatic width ÷ glabella-to-upper-lip (midface height)" },
+    { key: "fwhr",       name: "Face Width-Height Ratio",   abbr: "FWHR",    value: fwhrVal,            ideal: fwhrIdeal,           unit: "×",     description: "Bizygomatic width ÷ mid-eyebrow-to-lip height" },
     { key: "tfwhr",      name: "Total Face W-H Ratio",      abbr: "TFWHR",   value: tfwhrVal,           ideal: tfwhrIdeal,          unit: "×",     description: "Total face height divided by bizygomatic width" },
     { key: "iaaJfa",     name: "IAA–JFA Difference",        abbr: "IAA:JFA", value: iaaJfaVal,          ideal: iaaJfaIdeal,         unit: "°",     description: "Absolute difference between IAA and JFA angles" },
-    { key: "midface",    name: "Midface Ratio",             abbr: "MFR",     value: midfaceVal,         ideal: midfaceIdeal,        unit: "×",     description: "Interpupil distance ÷ midface height (glabella→upper lip)" },
+    { key: "midface",    name: "Midface Ratio",             abbr: "MFR",     value: midfaceVal,         ideal: midfaceIdeal,        unit: "×",     description: "Interpupil distance ÷ mid-pupil-to-lip height" },
     { key: "noseHW",     name: "Nose Height to Width",      abbr: "N H:W",   value: noseHWVal,          ideal: noseHWIdeal,         unit: "×",     description: "Nose height (nasion → subnasale) ÷ nose width" },
     { key: "noseBizygo", name: "Nose to Bizygo",            abbr: "N:BZ",    value: noseBizygoVal,      ideal: noseBizygoIdeal,     unit: "×",     description: "Bizygomatic width divided by nose width" },
     { key: "lipRatio",   name: "Lower-to-Upper Lip",        abbr: "L:U Lip", value: lipRatioVal,        ideal: lipRatioIdeal,       unit: "×",     description: "Lower lip height divided by upper lip height" },

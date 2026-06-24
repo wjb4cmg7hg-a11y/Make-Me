@@ -34,6 +34,8 @@ export const LM = {
 
   // Face structure
   CHIN: 152,
+  JAW_R: 148,
+  JAW_L: 377,
   ZYGO_R: 234,         // right bizygomatic (cheek)
   ZYGO_L: 454,         // left bizygomatic (cheek)
   GONIA_R: 172,        // right jaw angle (gonia)

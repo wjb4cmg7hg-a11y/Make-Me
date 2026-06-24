@@ -364,11 +364,33 @@ body {
 
 .ratio-card__value {
   font-size: 1.05rem; font-weight: 600; font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 .ratio-card__value--ideal { color: var(--green); }
 .ratio-card__value--close { color: var(--amber); }
 .ratio-card__value--off   { color: var(--red); }
+
+.ratio-card__score {
+  font-size: 0.8rem; font-weight: 600; line-height: 1;
+  padding: 4px 8px; border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ratio-card__score--ideal {
+  color: var(--green);
+  background-color: var(--green-dim);
+}
+
+.ratio-card__score--close {
+  color: var(--amber);
+  background-color: var(--amber-dim);
+}
+
+.ratio-card__score--off {
+  color: var(--red);
+  background-color: var(--red-dim);
+}
 
 .ratio-card__ideal-label {
   font-size: 0.68rem; color: var(--text-muted);
@@ -402,6 +424,11 @@ body {
 .ratio-bar__marker--ideal { background: var(--green); }
 .ratio-card__marker--close { background: var(--amber); }
 .ratio-card__marker--off   { background: var(--red); }
+
+.ratio-bar__deviation {
+  position: absolute; top: 0; height: 100%;
+  background: rgba(255,255,255,0.2);
+}
 
 .ratio-bar__labels {
   margin-top: 6px;

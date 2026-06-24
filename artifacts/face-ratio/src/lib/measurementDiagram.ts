@@ -26,10 +26,10 @@ export interface MeasurementDiagram {
 }
 
 export const ROLE_COLOR: Record<DiagramFormulaPart["role"], string> = {
-    numerator: "#c9a96e",
-    denominator: "#60a5fa",
+    numerator: "#ffab00",
+    denominator: "#00c3ff",
     operator: "#ffffff",
-    angle: "#a78bfa",
+    angle: "#ee82ee",
     label: "#ffffff",
 };
 
@@ -38,8 +38,8 @@ export const ROLE_COLOR: Record<DiagramFormulaPart["role"], string> = {
 export const DIAGRAMS: Record<string, MeasurementDiagram> = {
   esr: {
     lines: [
-      { from: "l_pupil", to: "r_pupil", color: "#c9a96e" },
-      { from: "zygo_l", to: "zygo_r", color: "#60a5fa" },
+      { from: "l_pupil", to: "r_pupil", color: "#ffab00" },
+      { from: "zygo_l", to: "zygo_r", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -52,8 +52,8 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
   },
   canthal: {
     lines: [
-      { from: "l_eye_med", to: "l_eye_lat", color: "#a78bfa" },
-      { from: "r_eye_med", to: "r_eye_lat", color: "#a78bfa" },
+      { from: "l_eye_med", to: "l_eye_lat", color: "#ee82ee" },
+      { from: "r_eye_med", to: "r_eye_lat", color: "#ee82ee" },
     ],
     angles: [],
     formulaParts: [
@@ -63,9 +63,9 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   pfl: {
     lines: [
-      { from: "l_eye_med", to: "l_eye_lat", color: "#c9a96e" },
-      { from: "r_eye_med", to: "r_eye_lat", color: "#c9a96e" },
-      { from: "zygo_l", to: "zygo_r", color: "#60a5fa" },
+      { from: "l_eye_med", to: "l_eye_lat", color: "#ffab00" },
+      { from: "r_eye_med", to: "r_eye_lat", color: "#ffab00" },
+      { from: "zygo_l", to: "zygo_r", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -79,10 +79,10 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   iaa: {
     lines: [
-      { from: "subnasale", to: "l_eye_lat", color: "#a78bfa" },
-      { from: "subnasale", to: "r_eye_lat", color: "#a78bfa" },
+      { from: "subnasale", to: "l_eye_lat", color: "#ee82ee" },
+      { from: "subnasale", to: "r_eye_lat", color: "#ee82ee" },
     ],
-    angles: [{ p1: "l_eye_lat", p2: "subnasale", p3: "r_eye_lat", color: "#a78bfa" }],
+    angles: [{ p1: "l_eye_lat", p2: "subnasale", p3: "r_eye_lat", color: "#ee82ee" }],
     formulaParts: [
       { text: "IAA", role: "label" },
       { text: "=", role: "operator" },
@@ -92,9 +92,9 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   icd: {
     lines: [
-      { from: "l_eye_med", to: "l_eye_lat", color: "#c9a96e" },
-      { from: "r_eye_med", to: "r_eye_lat", color: "#c9a96e" },
-      { from: "l_eye_med", to: "r_eye_med", color: "#60a5fa" },
+      { from: "l_eye_med", to: "l_eye_lat", color: "#ffab00" },
+      { from: "r_eye_med", to: "r_eye_lat", color: "#ffab00" },
+      { from: "l_eye_med", to: "r_eye_med", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -108,8 +108,8 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   ear: {
     lines: [
-      { from: "l_eye_med", to: "l_eye_lat", color: "#c9a96e" },
-      { from: "l_eye_top", to: "l_eye_bot", color: "#60a5fa" },
+      { from: "l_eye_med", to: "l_eye_lat", color: "#ffab00" },
+      { from: "l_eye_top", to: "l_eye_bot", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -123,10 +123,10 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   eme: {
     lines: [
-      { from: "lip_center", to: "l_pupil", color: "#a78bfa" },
-      { from: "lip_center", to: "r_pupil", color: "#a78bfa" },
+      { from: "lip_center", to: "l_pupil", color: "#ee82ee" },
+      { from: "lip_center", to: "r_pupil", color: "#ee82ee" },
     ],
-    angles: [{ p1: "l_pupil", p2: "lip_center", p3: "r_pupil", color: "#a78bfa" }],
+    angles: [{ p1: "l_pupil", p2: "lip_center", p3: "r_pupil", color: "#ee82ee" }],
     formulaParts: [
       { text: "EME", role: "label" },
       { text: "=", role: "operator" },
@@ -136,10 +136,10 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   jfa: {
     lines: [
-      { from: "jaw_l", to: "jaw_apex", color: "#a78bfa" },
-      { from: "jaw_r", to: "jaw_apex", color: "#a78bfa" },
+      { from: "jaw_l", to: "jaw_apex", color: "#ee82ee" },
+      { from: "jaw_r", to: "jaw_apex", color: "#ee82ee" },
     ],
-    angles: [{ p1: "jaw_l", p2: "jaw_apex", p3: "jaw_r", color: "#a78bfa" }],
+    angles: [{ p1: "jaw_l", p2: "jaw_apex", p3: "jaw_r", color: "#ee82ee" }],
     formulaParts: [
       { text: "JFA", role: "label" },
       { text: "=", role: "operator" },
@@ -149,8 +149,8 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   lff: {
     lines: [
-      { from: "nasion", to: "chin", color: "#c9a96e" },
-      { from: "hairline", to: "chin", color: "#60a5fa" },
+      { from: "nasion", to: "chin", color: "#ffab00" },
+      { from: "hairline", to: "chin", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -164,8 +164,8 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   jaww: {
     lines: [
-      { from: "gonia_l", to: "gonia_r", color: "#c9a96e" },
-      { from: "zygo_l", to: "zygo_r", color: "#60a5fa" },
+      { from: "gonia_l", to: "gonia_r", color: "#ffab00" },
+      { from: "zygo_l", to: "zygo_r", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -179,9 +179,9 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   thirds: {
     lines: [
-      { from: "hairline", to: "glabella", color: "#c9a96e" },
-      { from: "glabella", to: "subnasale", color: "#a78bfa" },
-      { from: "subnasale", to: "chin", color: "#60a5fa" },
+      { from: "hairline", to: "glabella", color: "#ffab00" },
+      { from: "glabella", to: "subnasale", color: "#ee82ee" },
+      { from: "subnasale", to: "chin", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -191,11 +191,11 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   fifths: {
     lines: [
-      { from: "ear_l", to: "l_eye_lat", color: "#c9a96e" },
-      { from: "l_eye_lat", to: "l_eye_med", color: "#a78bfa" },
-      { from: "l_eye_med", to: "r_eye_med", color: "#60a5fa" },
-      { from: "r_eye_med", to: "r_eye_lat", color: "#a78bfa" },
-      { from: "r_eye_lat", to: "ear_r", color: "#c9a96e" },
+      { from: "ear_l", to: "l_eye_lat", color: "#ffab00" },
+      { from: "l_eye_lat", to: "l_eye_med", color: "#ee82ee" },
+      { from: "l_eye_med", to: "r_eye_med", color: "#00c3ff" },
+      { from: "r_eye_med", to: "r_eye_lat", color: "#ee82ee" },
+      { from: "r_eye_lat", to: "ear_r", color: "#ffab00" },
     ],
     angles: [],
     formulaParts: [
@@ -205,8 +205,8 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   fwhr: {
     lines: [
-      { from: "zygo_l", to: "zygo_r", color: "#c9a96e" },
-      { from: "glabella", to: "upper_lip_top", color: "#60a5fa" },
+      { from: "zygo_l", to: "zygo_r", color: "#ffab00" },
+      { from: "mid_eyebrow", to: "upper_lip_top", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -214,14 +214,14 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
       { text: "=", role: "operator" },
       { text: "Bizygomatic Width", role: "numerator" },
       { text: "/", role: "operator" },
-      { text: "Mid-face Height", role: "denominator" },
+      { text: "Mid-Eyebrow to Lip Height", role: "denominator" },
     ],
   },
 
   tfwhr: {
     lines: [
-      { from: "hairline", to: "chin", color: "#c9a96e" },
-      { from: "zygo_l", to: "zygo_r", color: "#60a5fa" },
+      { from: "hairline", to: "chin", color: "#ffab00" },
+      { from: "zygo_l", to: "zygo_r", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -235,14 +235,14 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   iaaJfa: {
     lines: [
-      { from: "subnasale", to: "l_eye_lat", color: "#c9a96e" },
-      { from: "subnasale", to: "r_eye_lat", color: "#c9a96e" },
-      { from: "jaw_l", to: "jaw_apex", color: "#60a5fa" },
-      { from: "jaw_r", to: "jaw_apex", color: "#60a5fa" },
+      { from: "subnasale", to: "l_eye_lat", color: "#ffab00" },
+      { from: "subnasale", to: "r_eye_lat", color: "#ffab00" },
+      { from: "jaw_l", to: "jaw_apex", color: "#00c3ff" },
+      { from: "jaw_r", to: "jaw_apex", color: "#00c3ff" },
     ],
     angles: [
-      { p1: "l_eye_lat", p2: "subnasale", p3: "r_eye_lat", color: "#c9a96e" },
-      { p1: "jaw_l", p2: "jaw_apex", p3: "jaw_r", color: "#60a5fa" },
+      { p1: "l_eye_lat", p2: "subnasale", p3: "r_eye_lat", color: "#ffab00" },
+      { p1: "jaw_l", p2: "jaw_apex", p3: "jaw_r", color: "#00c3ff" },
     ],
     formulaParts: [
       { text: "IAA", role: "numerator" },
@@ -253,8 +253,8 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   midface: {
     lines: [
-      { from: "l_pupil", to: "r_pupil", color: "#c9a96e" },
-      { from: "glabella", to: "upper_lip_top", color: "#60a5fa" },
+      { from: "l_pupil", to: "r_pupil", color: "#ffab00" },
+      { from: "mid_pupil", to: "upper_lip_top", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -262,14 +262,14 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
       { text: "=", role: "operator" },
       { text: "Interpupillary Distance", role: "numerator" },
       { text: "/", role: "operator" },
-      { text: "Mid-face Height", role: "denominator" },
+      { text: "Mid-Pupil to Lip Height", role: "denominator" },
     ],
   },
 
   noseHW: {
     lines: [
-      { from: "nasion", to: "subnasale", color: "#c9a96e" },
-      { from: "nose_w_l", to: "nose_w_r", color: "#60a5fa" },
+      { from: "nasion", to: "subnasale", color: "#ffab00" },
+      { from: "nose_w_l", to: "nose_w_r", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -283,8 +283,8 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   noseBizygo: {
     lines: [
-      { from: "zygo_l", to: "zygo_r", color: "#c9a96e" },
-      { from: "nose_w_l", to: "nose_w_r", color: "#60a5fa" },
+      { from: "zygo_l", to: "zygo_r", color: "#ffab00" },
+      { from: "nose_w_l", to: "nose_w_r", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -298,8 +298,8 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   lipRatio: {
     lines: [
-      { from: "lip_center", to: "lower_lip_bot", color: "#c9a96e" },
-      { from: "upper_lip_top", to: "lip_center", color: "#60a5fa" },
+      { from: "lip_center", to: "lower_lip_bot", color: "#ffab00" },
+      { from: "upper_lip_top", to: "lip_center", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -313,8 +313,8 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   chinPhil: {
     lines: [
-      { from: "lower_lip_bot", to: "chin", color: "#c9a96e" },
-      { from: "subnasale", to: "upper_lip_top", color: "#60a5fa" },
+      { from: "lower_lip_bot", to: "chin", color: "#ffab00" },
+      { from: "subnasale", to: "upper_lip_top", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -328,8 +328,8 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   mouthBigon: {
     lines: [
-      { from: "mouth_l", to: "mouth_r", color: "#c9a96e" },
-      { from: "gonia_l", to: "gonia_r", color: "#60a5fa" },
+      { from: "mouth_l", to: "mouth_r", color: "#ffab00" },
+      { from: "gonia_l", to: "gonia_r", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -343,8 +343,8 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   mouthNose: {
     lines: [
-      { from: "mouth_l", to: "mouth_r", color: "#c9a96e" },
-      { from: "nose_w_l", to: "nose_w_r", color: "#60a5fa" },
+      { from: "mouth_l", to: "mouth_r", color: "#ffab00" },
+      { from: "nose_w_l", to: "nose_w_r", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -358,8 +358,8 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   bitemporal: {
     lines: [
-      { from: "temporal_l", to: "temporal_r", color: "#c9a96e" },
-      { from: "zygo_l", to: "zygo_r", color: "#60a5fa" },
+      { from: "temporal_l", to: "temporal_r", color: "#ffab00" },
+      { from: "zygo_l", to: "zygo_r", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [
@@ -373,8 +373,8 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
 
   forehead: {
     lines: [
-      { from: "temporal_l", to: "temporal_r", color: "#c9a96e" },
-      { from: "hairline", to: "glabella", color: "#60a5fa" },
+      { from: "temporal_l", to: "temporal_r", color: "#ffab00" },
+      { from: "hairline", to: "glabella", color: "#00c3ff" },
     ],
     angles: [],
     formulaParts: [

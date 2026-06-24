@@ -145,8 +145,8 @@ function FaceAnalyzer() {
     setState("idle");
   };
 
-  const overallScore = results.length > 0
-    ? (results.filter((r) => r.score === "ideal").length / results.length) * 100
+  const harmonyScore = results.length > 0
+    ? (results.reduce((sum, r) => sum + (r.score ?? 0), 0) / (results.length * 10)) * 100
     : 0;
 
   const activeDiagram = selectedRatioKey ? (DIAGRAMS[selectedRatioKey] ?? null) : null;
@@ -269,7 +269,7 @@ function FaceAnalyzer() {
             <div className="done-right">
               <RatioTable
                 results={results}
-                overallScore={overallScore}
+                harmonyScore={harmonyScore}
                 selectedKey={selectedRatioKey}
                 onSelect={handleRatioSelect}
                 diagrams={DIAGRAMS}

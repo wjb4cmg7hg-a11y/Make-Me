@@ -1,5 +1,5 @@
 import type { RatioResult } from "../lib/ratios";
-import type { MeasurementDiagram, DiagramFormulaPart } from "../lib/measurementDiagram";
+import { ROLE_COLOR, type MeasurementDiagram, type DiagramFormulaPart } from "../lib/measurementDiagram";
 import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 
 interface RatioTableProps {
@@ -52,13 +52,10 @@ function FormulaDisplay({ parts }: { parts: DiagramFormulaPart[] }) {
   return (
     <div className="formula-row">
       {parts.map((p, i) => {
-        let style: React.CSSProperties = {};
-        let cls = "formula-part";
-        if (p.role === "numerator") { style.color = "#c9a96e"; cls += " formula-part--num"; }
-        else if (p.role === "denominator") { style.color = "#60a5fa"; cls += " formula-part--den"; }
-        else if (p.role === "angle") { style.color = "#a78bfa"; cls += " formula-part--angle"; }
-        else if (p.role === "operator") { cls += " formula-part--op"; }
-        else if (p.role === "suffix") { cls += " formula-part--suffix"; }
+        const style: React.CSSProperties = {
+          color: ROLE_COLOR[p.role] || '#ffffff'
+        };
+        const cls = `formula-part formula-part--${p.role}`;
         return <span key={i} className={cls} style={style}>{p.text}</span>;
       })}
     </div>
