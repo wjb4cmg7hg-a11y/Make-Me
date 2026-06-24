@@ -230,7 +230,7 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
       { text: "Nose Width", role: "denominator" },
     ],
     lines: [
-      { from: "glabella",  to: "subnasale", role: "numerator" },
+      { from: "nasion",  to: "subnasale", role: "numerator" },
       { from: "nose_w_r",  to: "nose_w_l",  role: "denominator" },
     ],
     angles: [],
