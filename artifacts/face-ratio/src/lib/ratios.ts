@@ -75,8 +75,8 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const totalFaceHeight    = verticalDist(hairline, chin);
   const glabellaToUpperLip = verticalDist(glabella, upper_lip_top);
   const hairlineToGlabella = verticalDist(hairline, glabella);
-  // Nose height: glabella down to subnasale
-  const noseHeight         = verticalDist(glabella, subnasale);
+  // Nose height: nasion down to subnasale
+  const noseHeight         = verticalDist(nasion, subnasale);
   const nasionToChin       = verticalDist(nasion, chin);
   // Philtrum: subnasale down to top of upper lip
   const philtrumHeight     = verticalDist(subnasale, upper_lip_top);
@@ -230,7 +230,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
     { key: "tfwhr",      name: "Total Face W-H Ratio",      abbr: "TFWHR",   value: tfwhrVal,           ideal: tfwhrIdeal,          unit: "×",     description: "Total face height divided by bizygomatic width" },
     { key: "iaaJfa",     name: "IAA–JFA Difference",        abbr: "IAA:JFA", value: iaaJfaVal,          ideal: iaaJfaIdeal,         unit: "°",     description: "Absolute difference between IAA and JFA angles" },
     { key: "midface",    name: "Midface Ratio",             abbr: "MFR",     value: midfaceVal,         ideal: midfaceIdeal,        unit: "×",     description: "Interpupil distance ÷ midface height (glabella→upper lip)" },
-    { key: "noseHW",     name: "Nose Height to Width",      abbr: "N H:W",   value: noseHWVal,          ideal: noseHWIdeal,         unit: "×",     description: "Nose height (glabella → subnasale) ÷ nose width" },
+    { key: "noseHW",     name: "Nose Height to Width",      abbr: "N H:W",   value: noseHWVal,          ideal: noseHWIdeal,         unit: "×",     description: "Nose height (nasion → subnasale) ÷ nose width" },
     { key: "noseBizygo", name: "Nose to Bizygo",            abbr: "N:BZ",    value: noseBizygoVal,      ideal: noseBizygoIdeal,     unit: "×",     description: "Bizygomatic width divided by nose width" },
     { key: "lipRatio",   name: "Lower-to-Upper Lip",        abbr: "L:U Lip", value: lipRatioVal,        ideal: lipRatioIdeal,       unit: "×",     description: "Lower lip height divided by upper lip height" },
     { key: "chinPhil",   name: "Chin to Philtrum",          abbr: "C:Ph",    value: chinToPhiltrumVal,  ideal: chinToPhiltrumIdeal, unit: "×",     description: "Chin-to-lower-lip height ÷ philtrum height (subnasale→upper lip)" },
