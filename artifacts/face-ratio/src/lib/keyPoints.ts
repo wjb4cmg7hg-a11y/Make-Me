@@ -14,11 +14,11 @@ export type PointKey =
   | "r_eye_lat" | "r_eye_med" | "l_eye_lat" | "l_eye_med"
   | "r_eye_top" | "r_eye_bot" | "l_eye_top" | "l_eye_bot"
   | "r_pupil" | "l_pupil"
+  | "mid_pupil" | "mid_eyebrow"
   | "alar_r" | "alar_l"
   | "nose_w_r" | "nose_w_l"
   | "subnasale"
-  | "upper_lip_top" | "lower_lip_bot"
-  | "mouth_r" | "mouth_l" | "lip_center";
+  | "upper_lip_top" | "lower_lip_bot" | "mouth_r" | "mouth_l" | "lip_center";
 
 export type KeyPointPositions = Partial<Record<PointKey, Point>>;
 
@@ -32,6 +32,7 @@ export interface PointDef {
 export const KEY_POINT_DEFS: Record<PointKey, PointDef> = {
   hairline:      { label: "Hairline",       group: "forehead", color: "#a78bfa", description: "Top of forehead at hairline" },
   glabella:      { label: "Glabella",       group: "forehead", color: "#a78bfa", description: "Between brows, above nose bridge" },
+  mid_eyebrow:   { label: "Mid Eyebrow",    group: "forehead", color: "#a78bfa", description: "Midpoint of the eyebrows" },
   nasion:        { label: "Nasion",         group: "nose",     color: "#fbbf24", description: "Nasal bridge (top of nose)" },
   temporal_r:    { label: "Temporal R",     group: "forehead", color: "#a78bfa", description: "Right temporal ridge (forehead edge)" },
   temporal_l:    { label: "Temporal L",     group: "forehead", color: "#a78bfa", description: "Left temporal ridge (forehead edge)" },
@@ -53,6 +54,7 @@ export const KEY_POINT_DEFS: Record<PointKey, PointDef> = {
   l_eye_bot:     { label: "L Lower Lid",    group: "eyes",     color: "#34d399", description: "Left lower eyelid center" },
   r_pupil:       { label: "R Pupil",        group: "eyes",     color: "#34d399", description: "Right pupil / iris center" },
   l_pupil:       { label: "L Pupil",        group: "eyes",     color: "#34d399", description: "Left pupil / iris center" },
+  mid_pupil:     { label: "Mid Pupil",      group: "eyes",     color: "#34d399", description: "Midpoint between the pupils" },
   alar_r:        { label: "Alar Base R",    group: "nose",     color: "#fbbf24", description: "Right alar base of nose" },
   alar_l:        { label: "Alar Base L",    group: "nose",     color: "#fbbf24", description: "Left alar base of nose" },
   nose_w_r:      { label: "Nose Width R",   group: "nose",     color: "#fbbf24", description: "Widest right point of nose" },
@@ -117,6 +119,8 @@ export function extractKeyPoints(
         l_eye_bot: p(LM.L_EYE_BOT),
         r_pupil: avg(LM.R_IRIS_RING),
         l_pupil: avg(LM.L_IRIS_RING),
+        mid_pupil: null, // Calculated below
+        mid_eyebrow: null, // Calculated below
         alar_r: p(LM.ALAR_R),
         alar_l: p(LM.ALAR_L),
         nose_w_r: p(LM.NOSE_W_R),
@@ -133,6 +137,17 @@ export function extractKeyPoints(
     const llb = allKeyPoints.lower_lip_bot;
     if (ult && llb) {
         allKeyPoints.lip_center = midpoint(ult, llb);
+    }
+
+    const rp = allKeyPoints.r_pupil;
+    const lp = allKeyPoints.l_pupil;
+    if (rp && lp) {
+        allKeyPoints.mid_pupil = midpoint(rp, lp);
+    }
+
+    const glabella = allKeyPoints.glabella;
+    if (glabella) {
+        allKeyPoints.mid_eyebrow = { x: glabella.x, y: glabella.y + 4 };
     }
 
     const placed: KeyPointPositions = {};

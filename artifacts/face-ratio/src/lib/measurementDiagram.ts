@@ -174,11 +174,11 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     formulaParts: [
       { text: "Bizygomatic Width", role: "numerator" },
       { text: " ÷ ", role: "operator" },
-      { text: "Glabella → Upper Lip", role: "denominator" },
+      { text: "Mid Eyebrow → Upper Lip", role: "denominator" },
     ],
     lines: [
       { from: "zygo_r",   to: "zygo_l",  role: "numerator",   label: "Bizygomatic" },
-      { from: "glabella", to: "upper_lip_top", role: "denominator", label: "Midface Height" },
+      { from: "mid_eyebrow", to: "upper_lip_top", role: "denominator", label: "Midface Height" },
     ],
     angles: [],
   },
@@ -219,7 +219,7 @@ export const DIAGRAMS: Record<string, RatioDiagram> = {
     ],
     lines: [
         { from: "r_pupil", to: "l_pupil", role: "numerator", label: "Interpupil" },
-        { from: "glabella", to: "upper_lip_top", role: "denominator", label: "Midface Ht." }
+        { from: "mid_pupil", to: "upper_lip_top", role: "denominator", label: "Midface Ht." }
     ],
     angles: [],
   },
