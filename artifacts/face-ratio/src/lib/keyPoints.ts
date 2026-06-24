@@ -86,12 +86,12 @@ export const KEY_POINT_DEFS: Record<PointKey, { label: string; color: string }> 
   l_eye_top:     { label: "Upper Eye (L)",   color: "#34d399" },
   l_eye_bot:     { label: "Lower Eye (L)",   color: "#34d399" },
   mid_eyebrow:   { label: "Mid Eyebrow",     color: "#34d399" },
-  r_eyebrow_l:   { label: "Eyebrow (R-L)",   color: "#34d399" },
-  r_eyebrow_r:   { label: "Eyebrow (R-R)",   color: "#34d399" },
+  r_eyebrow_l:   { label: "Eyebrow (R, medial)",   color: "#34d399" },
+  r_eyebrow_r:   { label: "Eyebrow (R, lateral)",   color: "#34d399" },
   r_eyebrow_top: { label: "Eyebrow Top (R)", color: "#34d399" },
   r_eyebrow_bot: { label: "Eyebrow Bot (R)", color: "#34d399" },
-  l_eyebrow_l:   { label: "Eyebrow (L-L)",   color: "#34d399" },
-  l_eyebrow_r:   { label: "Eyebrow (L-R)",   color: "#34d399" },
+  l_eyebrow_l:   { label: "Eyebrow (L, lateral)",   color: "#34d399" },
+  l_eyebrow_r:   { label: "Eyebrow (L, medial)",   color: "#34d399" },
   l_eyebrow_top: { label: "Eyebrow Top (L)", color: "#34d399" },
   l_eyebrow_bot: { label: "Eyebrow Bot (L)", color: "#34d399" },
   r_pupil:       { label: "Pupil (R)",       color: "#34d399" },
@@ -134,6 +134,7 @@ export function extractKeyPoints(
   const r_eye_top = get(LM.R_EYE_TOP);
   const l_eye_top = get(LM.L_EYE_TOP);
   const r_eye_med = get(LM.R_EYE_MEDIAL);
+  const l_eye_med = get(LM.L_EYE_MEDIAL);
   const nasion = get(LM.NASION);
 
   const jaw_apex = {
@@ -161,18 +162,18 @@ export function extractKeyPoints(
     r_eye_lat:     get(LM.R_EYE_LATERAL),
     r_eye_med:     r_eye_med,
     l_eye_lat:     get(LM.L_EYE_LATERAL),
-    l_eye_med:     get(LM.L_EYE_MEDIAL),
+    l_eye_med:     l_eye_med,
     r_eye_top:     r_eye_top,
     r_eye_bot:     get(LM.R_EYE_BOT),
     l_eye_top:     l_eye_top,
     l_eye_bot:     get(LM.L_EYE_BOT),
     mid_eyebrow:   { x: (r_eye_top.x + l_eye_top.x) / 2, y: (r_eye_top.y + l_eye_top.y) / 2 },
-    r_eyebrow_l:   get(46),  // L eyebrow outer
-    r_eyebrow_r:   get(70),  // L eyebrow inner
+    r_eyebrow_l:   { x: r_eye_med.x, y: r_eye_med.y - 2 },
+    r_eyebrow_r:   get(46),  // R eyebrow lateral
     r_eyebrow_top: get(105),
     r_eyebrow_bot: avg([52, 53, 55, 63, 65, 66]),
-    l_eyebrow_l:   get(300), // R eyebrow inner
-    l_eyebrow_r:   get(276), // R eyebrow outer
+    l_eyebrow_l:   get(276), // L eyebrow lateral
+    l_eyebrow_r:   { x: l_eye_med.x, y: l_eye_med.y - 2 },
     l_eyebrow_top: get(334),
     l_eyebrow_bot: avg([282, 283, 285, 293, 295, 296]),
 

@@ -475,6 +475,7 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
   eyebrowTilt: {
     lines: [
       { from: "l_eyebrow_r", to: "l_eyebrow_l", color: "#ee82ee" },
+      { from: "r_eyebrow_l", to: "r_eyebrow_r", color: "#ee82ee" },
     ],
     angles: [],
     formulaParts: [
