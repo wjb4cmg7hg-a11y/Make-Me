@@ -20,8 +20,8 @@ interface PointCanvasProps {
   onPointDrop: (key: PointKey, x: number, y: number) => void;
 }
 
-const DOT_RADIUS = 4;
-const HIT_RADIUS = 18;
+const DOT_RADIUS = 2;
+const HIT_RADIUS = 9;
 const DRAG_THRESHOLD = 5; // px in canvas space before we consider it a drag
 
 // ── Drawing helpers ──────────────────────────────────────────────────────────
@@ -239,24 +239,24 @@ export function PointCanvas({
         const isSelected = selectedEditKey === key;
         const isHovered  = hoveredKeyRef.current === key;
         const isDragging = dragRef.current?.key === key;
-        const r = isDragging ? 2.5 : isSelected ? 2.5 : isHovered ? 3.5 : 4.5;
+        const r = isDragging ? 1.25 : isSelected ? 1.25 : isHovered ? 1.75 : 2.25;
 
         ctx.save();
         ctx.shadowColor = def.color;
-        ctx.shadowBlur = isSelected ? 18 : isHovered || isDragging ? 12 : 5;
+        ctx.shadowBlur = isSelected ? 9 : isHovered || isDragging ? 6 : 2.5;
 
         if (isSelected) {
           ctx.beginPath();
-          ctx.arc(cx, cy, r + 6, 0, Math.PI * 2);
+          ctx.arc(cx, cy, r + 3, 0, Math.PI * 2);
           ctx.strokeStyle = def.color;
           ctx.globalAlpha = 0.5;
-          ctx.lineWidth = 2.5;
+          ctx.lineWidth = 1.25;
           ctx.stroke();
           ctx.globalAlpha = 1;
         }
 
         ctx.beginPath();
-        ctx.arc(cx, cy, r + 2.5, 0, Math.PI * 2);
+        ctx.arc(cx, cy, r + 1.25, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(0,0,0,0.6)";
         ctx.fill();
 
@@ -273,7 +273,7 @@ export function PointCanvas({
           ctx.font = "bold 12px Inter, sans-serif";
           const tw = ctx.measureText(label).width;
           const lx = cx - tw / 2;
-          const ly = cy - r - 16;
+          const ly = cy - r - 8;
           ctx.fillStyle = "rgba(0,0,0,0.85)";
           ctx.beginPath();
           ctx.roundRect(lx - 6, ly - 13, tw + 12, 18, 5);
@@ -283,10 +283,10 @@ export function PointCanvas({
         }
       } else { // Not edit mode, but diagram is active
         ctx.save();
-        ctx.shadowColor = def.color; ctx.shadowBlur = 12;
-        ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.fill();
+        ctx.shadowColor = def.color; ctx.shadowBlur = 6;
         ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.fill();
+        ctx.beginPath(); ctx.arc(cx, cy, 1.25, 0, Math.PI * 2);
         ctx.fillStyle = def.color; ctx.fill();
         ctx.shadowBlur = 0; ctx.restore();
       }
