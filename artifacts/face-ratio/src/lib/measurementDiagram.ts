@@ -1,324 +1,388 @@
+import type { PointKey } from "./keyPoints";
 
-import type { PointKey } from './keyPoints';
-
-export interface LineDef {
+export interface DiagramLine {
   from: PointKey;
   to: PointKey;
-  role: 'numerator' | 'denominator' | 'ref';
-  label?: string;
+  color?: string;
+  dashed?: boolean;
 }
 
-export interface AngleDef {
-  vertex: PointKey;
-  arm1: PointKey;
-  arm2: PointKey;
-  label: string;
+export interface DiagramAngle {
+  p1: PointKey; // Endpoint 1
+  p2: PointKey; // Vertex
+  p3: PointKey; // Endpoint 2
+  color?: string;
 }
 
-export interface FormulaPart {
+export interface DiagramFormulaPart {
   text: string;
-  role: 'numerator' | 'denominator' | 'operator' | 'suffix' | 'angle' | 'ref';
+  role: "numerator" | "denominator" | "operator" | "angle" | "label";
 }
 
-export interface RatioDiagram {
-  formulaParts: FormulaPart[];
-  lines: LineDef[];
-  angles: AngleDef[];
+export interface MeasurementDiagram {
+  lines: DiagramLine[];
+  angles: DiagramAngle[];
+  formulaParts: DiagramFormulaPart[];
 }
 
-export const ROLE_COLOR = {
-  numerator: "#c9a96e",
-  denominator: "#60a5fa",
-  ref: "#a78bfa",
-  angle: "#a78bfa",
+export const ROLE_COLOR: Record<DiagramFormulaPart["role"], string> = {
+    numerator: "#c9a96e",
+    denominator: "#60a5fa",
+    operator: "#ffffff",
+    angle: "#a78bfa",
+    label: "#ffffff",
 };
 
-export const DIAGRAMS: Record<string, RatioDiagram> = {
+
+// prettier-ignore
+export const DIAGRAMS: Record<string, MeasurementDiagram> = {
   esr: {
-    formulaParts: [
-      { text: "Pupil Separation", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
-      { text: "Bizygomatic Width", role: "denominator" },
-      { text: " × 100", role: "suffix" },
-    ],
     lines: [
-      { from: "r_pupil",  to: "l_pupil", role: "numerator"},
-      { from: "zygo_r",   to: "zygo_l",  role: "denominator" },
+      { from: "l_pupil", to: "r_pupil", color: "#c9a96e" },
+      { from: "zygo_l", to: "zygo_r", color: "#60a5fa" },
     ],
     angles: [],
+    formulaParts: [
+      { text: "ESR", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Interpupillary Distance", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Bizygomatic Width", role: "denominator" },
+    ],
   },
   canthal: {
-    formulaParts: [
-      { text: "Angle of Canthus Line vs Horizontal", role: "angle" },
-    ],
     lines: [
-      { from: "r_eye_med", to: "r_eye_lat", role: "numerator" },
-      { from: "l_eye_med", to: "l_eye_lat", role: "denominator" },
+      { from: "l_eye_med", to: "l_eye_lat", color: "#a78bfa" },
+      { from: "r_eye_med", to: "r_eye_lat", color: "#a78bfa" },
     ],
     angles: [],
+    formulaParts: [
+      { text: "Canthal Tilt", role: "label" },
+    ],
   },
+
   pfl: {
-    formulaParts: [
-      { text: "Eye Fissure Length", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
-      { text: "Bizygomatic Width", role: "denominator" },
-      { text: " × 100", role: "suffix" },
-    ],
     lines: [
-      { from: "r_eye_med", to: "r_eye_lat", role: "numerator" },
-      { from: "l_eye_med", to: "l_eye_lat", role: "numerator" },
-      { from: "zygo_r",    to: "zygo_l",    role: "denominator" },
+      { from: "l_eye_med", to: "l_eye_lat", color: "#c9a96e" },
+      { from: "r_eye_med", to: "r_eye_lat", color: "#c9a96e" },
+      { from: "zygo_l", to: "zygo_r", color: "#60a5fa" },
     ],
     angles: [],
+    formulaParts: [
+      { text: "PFL", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Palpebral Fissure Length", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Bizygomatic Width", role: "denominator" },
+    ],
   },
+
   iaa: {
-    formulaParts: [
-      { text: "Angle at Alar Base to Lateral Canthi", role: "angle" },
-    ],
     lines: [
-      { from: "subnasale",  to: "r_eye_lat", role: "numerator" },
-      { from: "subnasale",  to: "l_eye_lat", role: "denominator" },
+      { from: "subnasale", to: "l_eye_lat", color: "#a78bfa" },
+      { from: "subnasale", to: "r_eye_lat", color: "#a78bfa" },
     ],
-    angles: [
-      { vertex: "subnasale", arm1: "r_eye_lat", arm2: "l_eye_lat", label: "IAA" },
+    angles: [{ p1: "l_eye_lat", p2: "subnasale", p3: "r_eye_lat", color: "#a78bfa" }],
+    formulaParts: [
+      { text: "IAA", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Infraorbital Alar Angle", role: "angle" },
     ],
   },
+
   icd: {
+    lines: [
+      { from: "l_eye_med", to: "l_eye_lat", color: "#c9a96e" },
+      { from: "r_eye_med", to: "r_eye_lat", color: "#c9a96e" },
+      { from: "l_eye_med", to: "r_eye_med", color: "#60a5fa" },
+    ],
+    angles: [],
     formulaParts: [
+      { text: "ICD", role: "label" },
+      { text: "=", role: "operator" },
       { text: "Eye Fissure Length", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
+      { text: "/", role: "operator" },
       { text: "Intercanthal Distance", role: "denominator" },
     ],
-    lines: [
-      { from: "r_eye_med", to: "r_eye_lat", role: "numerator" },
-      { from: "l_eye_med", to: "l_eye_lat", role: "numerator" },
-      { from: "r_eye_med", to: "l_eye_med", role: "denominator" },
-    ],
-    angles: [],
   },
+
   ear: {
-    formulaParts: [
-      { text: "Eye Width", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
-      { text: "Eye Height", role: "denominator" },
-    ],
     lines: [
-      { from: "r_eye_lat", to: "r_eye_med", role: "numerator" },
-      { from: "l_eye_lat", to: "l_eye_med", role: "numerator" },
-      { from: "r_eye_top", to: "r_eye_bot", role: "denominator" },
-      { from: "l_eye_top", to: "l_eye_bot", role: "denominator" },
+      { from: "l_eye_med", to: "l_eye_lat", color: "#c9a96e" },
+      { from: "l_eye_top", to: "l_eye_bot", color: "#60a5fa" },
     ],
     angles: [],
+    formulaParts: [
+      { text: "EAR", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Eye Fissure Length", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Eye Fissure Height", role: "denominator" },
+    ],
   },
+
   eme: {
-    formulaParts: [
-      { text: "Angle at Mouth Center to Pupils", role: "angle" },
-    ],
     lines: [
-      { from: "lip_center", to: "l_pupil", role: "numerator" },
-      { from: "lip_center", to: "r_pupil", role: "denominator" },
+      { from: "lip_center", to: "l_pupil", color: "#a78bfa" },
+      { from: "lip_center", to: "r_pupil", color: "#a78bfa" },
     ],
-    angles: [
-      { vertex: "lip_center", arm1: "l_pupil", arm2: "r_pupil", label: "EME" },
+    angles: [{ p1: "l_pupil", p2: "lip_center", p3: "r_pupil", color: "#a78bfa" }],
+    formulaParts: [
+      { text: "EME", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Eye-Mouth-Eye Angle", role: "angle" },
     ],
   },
+
   jfa: {
-    formulaParts: [
-      { text: "Angle at Jaw Apex Between Mandible Lines", role: "angle" },
-    ],
     lines: [
-      { from: "gonia_r",  to: "jaw_apex", role: "numerator" },
-      { from: "gonia_l",  to: "jaw_apex", role: "denominator" },
+      { from: "jaw_l", to: "jaw_apex", color: "#a78bfa" },
+      { from: "jaw_r", to: "jaw_apex", color: "#a78bfa" },
     ],
-    angles: [
-      { vertex: "jaw_apex", arm1: "gonia_r", arm2: "gonia_l", label: "JFA" },
+    angles: [{ p1: "jaw_l", p2: "jaw_apex", p3: "jaw_r", color: "#a78bfa" }],
+    formulaParts: [
+      { text: "JFA", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Jaw Frontal Angle", role: "angle" },
     ],
   },
+
   lff: {
-    formulaParts: [
-      { text: "Nasion → Chin", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
-      { text: "Hairline → Chin", role: "denominator" },
-      { text: " × 100", role: "suffix" },
-    ],
     lines: [
-      { from: "nasion",   to: "chin", role: "numerator" },
-      { from: "hairline", to: "chin", role: "denominator" },
+      { from: "nasion", to: "chin", color: "#c9a96e" },
+      { from: "hairline", to: "chin", color: "#60a5fa" },
     ],
     angles: [],
+    formulaParts: [
+      { text: "LFF", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Nasion to Chin", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Total Face Height", role: "denominator" },
+    ],
   },
+
   jaww: {
+    lines: [
+      { from: "gonia_l", to: "gonia_r", color: "#c9a96e" },
+      { from: "zygo_l", to: "zygo_r", color: "#60a5fa" },
+    ],
+    angles: [],
     formulaParts: [
+      { text: "JW", role: "label" },
+      { text: "=", role: "operator" },
       { text: "Bigonial Width", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
+      { text: "/", role: "operator" },
       { text: "Bizygomatic Width", role: "denominator" },
     ],
-    lines: [
-      { from: "gonia_r", to: "gonia_l", role: "numerator" },
-      { from: "zygo_r",  to: "zygo_l",  role: "denominator" },
-    ],
-    angles: [],
   },
+
   thirds: {
-    formulaParts: [
-      { text: "Hairline→Glabella : Glabella→Subnasale : Subnasale→Chin", role: "angle" },
-    ],
     lines: [
-      { from: "hairline",  to: "glabella",  role: "numerator" },
-      { from: "glabella",  to: "subnasale", role: "denominator" },
-      { from: "subnasale", to: "chin",      role: "ref" },
+      { from: "hairline", to: "glabella", color: "#c9a96e" },
+      { from: "glabella", to: "subnasale", color: "#a78bfa" },
+      { from: "subnasale", to: "chin", color: "#60a5fa" },
     ],
     angles: [],
+    formulaParts: [
+      { text: "Facial Thirds", role: "label" },
+    ],
   },
+
+  fifths: {
+    lines: [
+      { from: "ear_l", to: "l_eye_lat", color: "#c9a96e" },
+      { from: "l_eye_lat", to: "l_eye_med", color: "#a78bfa" },
+      { from: "l_eye_med", to: "r_eye_med", color: "#60a5fa" },
+      { from: "r_eye_med", to: "r_eye_lat", color: "#a78bfa" },
+      { from: "r_eye_lat", to: "ear_r", color: "#c9a96e" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "Facial Fifths", role: "label" },
+    ],
+  },
+
   fwhr: {
-    formulaParts: [
-      { text: "Bizygomatic Width", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
-      { text: "Mid Eyebrow → Upper Lip", role: "denominator" },
-    ],
     lines: [
-      { from: "zygo_r",   to: "zygo_l",  role: "numerator" },
-      { from: "mid_eyebrow", to: "upper_lip_top", role: "denominator" },
+      { from: "zygo_l", to: "zygo_r", color: "#c9a96e" },
+      { from: "glabella", to: "upper_lip_top", color: "#60a5fa" },
     ],
     angles: [],
-  },
-  tfwhr: {
     formulaParts: [
+      { text: "FWHR", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Bizygomatic Width", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Mid-face Height", role: "denominator" },
+    ],
+  },
+
+  tfwhr: {
+    lines: [
+      { from: "hairline", to: "chin", color: "#c9a96e" },
+      { from: "zygo_l", to: "zygo_r", color: "#60a5fa" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "TFWHR", role: "label" },
+      { text: "=", role: "operator" },
       { text: "Total Face Height", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
+      { text: "/", role: "operator" },
       { text: "Bizygomatic Width", role: "denominator" },
     ],
-    lines: [
-      { from: "hairline", to: "chin",    role: "numerator" },
-      { from: "zygo_r",   to: "zygo_l",  role: "denominator" },
-    ],
-    angles: [],
   },
+
   iaaJfa: {
-    formulaParts: [
-      { text: "IAA Angle", role: "numerator" },
-      { text: " − ", role: "operator" },
-      { text: "JFA Angle", role: "denominator" },
-    ],
     lines: [
-      { from: "subnasale", to: "r_eye_lat", role: "numerator" },
-      { from: "subnasale", to: "l_eye_lat", role: "numerator" },
-      { from: "gonia_r",   to: "jaw_apex",  role: "denominator" },
-      { from: "gonia_l",   to: "jaw_apex",  role: "denominator" },
+      { from: "subnasale", to: "l_eye_lat", color: "#c9a96e" },
+      { from: "subnasale", to: "r_eye_lat", color: "#c9a96e" },
+      { from: "jaw_l", to: "jaw_apex", color: "#60a5fa" },
+      { from: "jaw_r", to: "jaw_apex", color: "#60a5fa" },
     ],
     angles: [
-      { vertex: "subnasale", arm1: "r_eye_lat", arm2: "l_eye_lat", label: "IAA" },
-      { vertex: "jaw_apex",  arm1: "gonia_r",   arm2: "gonia_l",   label: "JFA" },
+      { p1: "l_eye_lat", p2: "subnasale", p3: "r_eye_lat", color: "#c9a96e" },
+      { p1: "jaw_l", p2: "jaw_apex", p3: "jaw_r", color: "#60a5fa" },
+    ],
+    formulaParts: [
+      { text: "IAA", role: "numerator" },
+      { text: "-", role: "operator" },
+      { text: "JFA", role: "denominator" },
     ],
   },
+
   midface: {
-    formulaParts: [
-      { text: "Interpupil Distance", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
-      { text: "Midface Height", role: "denominator" },
-    ],
     lines: [
-        { from: "r_pupil", to: "l_pupil", role: "numerator" },
-        { from: "mid_pupil", to: "upper_lip_top", role: "denominator" }
+      { from: "l_pupil", to: "r_pupil", color: "#c9a96e" },
+      { from: "glabella", to: "upper_lip_top", color: "#60a5fa" },
     ],
     angles: [],
+    formulaParts: [
+      { text: "Midface Ratio", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Interpupillary Distance", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Mid-face Height", role: "denominator" },
+    ],
   },
+
   noseHW: {
+    lines: [
+      { from: "nasion", to: "subnasale", color: "#c9a96e" },
+      { from: "nose_w_l", to: "nose_w_r", color: "#60a5fa" },
+    ],
+    angles: [],
     formulaParts: [
+      { text: "Nose H:W", role: "label" },
+      { text: "=", role: "operator" },
       { text: "Nose Height", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
+      { text: "/", role: "operator" },
       { text: "Nose Width", role: "denominator" },
     ],
-    lines: [
-      { from: "nasion",  to: "subnasale", role: "numerator" },
-      { from: "nose_w_r",  to: "nose_w_l",  role: "denominator" },
-    ],
-    angles: [],
   },
+
   noseBizygo: {
-    formulaParts: [
-      { text: "Bizygomatic Width", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
-      { text: "Nose Width", role: "denominator" },
-    ],
     lines: [
-      { from: "zygo_r",   to: "zygo_l",  role: "numerator" },
-      { from: "nose_w_r", to: "nose_w_l", role: "denominator" },
+      { from: "zygo_l", to: "zygo_r", color: "#c9a96e" },
+      { from: "nose_w_l", to: "nose_w_r", color: "#60a5fa" },
     ],
     angles: [],
-  },
-  lipRatio: {
     formulaParts: [
+      { text: "Nose:Bizygo", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Bizygomatic Width", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Nose Width", role: "denominator" },
+    ],
+  },
+
+  lipRatio: {
+    lines: [
+      { from: "lip_center", to: "lower_lip_bot", color: "#c9a96e" },
+      { from: "upper_lip_top", to: "lip_center", color: "#60a5fa" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "Lip Ratio", role: "label" },
+      { text: "=", role: "operator" },
       { text: "Lower Lip Height", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
+      { text: "/", role: "operator" },
       { text: "Upper Lip Height", role: "denominator" },
     ],
-    lines: [
-      { from: "lip_center",  to: "lower_lip_bot", role: "numerator" },
-      { from: "upper_lip_top", to: "lip_center",  role: "denominator" },
-    ],
-    angles: [],
   },
+
   chinPhil: {
-    formulaParts: [
-      { text: "Chin → Lower Lip", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
-      { text: "Subnasale → Upper Lip", role: "denominator" },
-    ],
     lines: [
-      { from: "lower_lip_bot", to: "chin",          role: "numerator" },
-      { from: "subnasale",     to: "upper_lip_top",  role: "denominator" },
+      { from: "lower_lip_bot", to: "chin", color: "#c9a96e" },
+      { from: "subnasale", to: "upper_lip_top", color: "#60a5fa" },
     ],
     angles: [],
+    formulaParts: [
+      { text: "Chin:Philtrum", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Chin Height", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Philtrum Height", role: "denominator" },
+    ],
   },
+
   mouthBigon: {
-    formulaParts: [
-      { text: "Mouth Width", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
-      { text: "Bigonial Width", role: "denominator" },
-      { text: " × 100", role: "suffix" },
-    ],
     lines: [
-      { from: "mouth_r",  to: "mouth_l",  role: "numerator" },
-      { from: "gonia_r",  to: "gonia_l",  role: "denominator" },
+      { from: "mouth_l", to: "mouth_r", color: "#c9a96e" },
+      { from: "gonia_l", to: "gonia_r", color: "#60a5fa" },
     ],
     angles: [],
-  },
-  mouthNose: {
     formulaParts: [
+      { text: "Mouth:Bigonial", role: "label" },
+      { text: "=", role: "operator" },
       { text: "Mouth Width", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
+      { text: "/", role: "operator" },
+      { text: "Bigonial Width", role: "denominator" },
+    ],
+  },
+
+  mouthNose: {
+    lines: [
+      { from: "mouth_l", to: "mouth_r", color: "#c9a96e" },
+      { from: "nose_w_l", to: "nose_w_r", color: "#60a5fa" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "Mouth:Nose", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Mouth Width", role: "numerator" },
+      { text: "/", role: "operator" },
       { text: "Nose Width", role: "denominator" },
     ],
-    lines: [
-      { from: "mouth_r",  to: "mouth_l",  role: "numerator" },
-      { from: "nose_w_r", to: "nose_w_l", role: "denominator" },
-    ],
-    angles: [],
   },
+
   bitemporal: {
+    lines: [
+      { from: "temporal_l", to: "temporal_r", color: "#c9a96e" },
+      { from: "zygo_l", to: "zygo_r", color: "#60a5fa" },
+    ],
+    angles: [],
     formulaParts: [
-      { text: "Temporal Width", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
+      { text: "Bitemporal", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Bitemporal Width", role: "numerator" },
+      { text: "/", role: "operator" },
       { text: "Bizygomatic Width", role: "denominator" },
-      { text: " × 100", role: "suffix" },
     ],
-    lines: [
-      { from: "temporal_r", to: "temporal_l", role: "numerator" },
-      { from: "zygo_r",     to: "zygo_l",     role: "denominator" },
-    ],
-    angles: [],
   },
+
   forehead: {
-    formulaParts: [
-      { text: "Temporal Width", role: "numerator" },
-      { text: " ÷ ", role: "operator" },
-      { text: "Hairline → Glabella", role: "denominator" },
-    ],
     lines: [
-      { from: "temporal_r", to: "temporal_l", role: "numerator" },
-      { from: "hairline",   to: "glabella",   role: "denominator" },
+      { from: "temporal_l", to: "temporal_r", color: "#c9a96e" },
+      { from: "hairline", to: "glabella", color: "#60a5fa" },
     ],
     angles: [],
+    formulaParts: [
+      { text: "Forehead L:W", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Forehead Width", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Forehead Height", role: "denominator" },
+    ],
   },
 };

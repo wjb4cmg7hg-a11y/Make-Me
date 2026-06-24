@@ -74,7 +74,7 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
     ear_r, ear_l,
     zygo_r, zygo_l,
     gonia_r, gonia_l,
-    chin, jaw_apex,
+    jaw_r, jaw_l, chin, jaw_apex,
     r_eye_lat, r_eye_med, l_eye_lat, l_eye_med,
     r_eye_top, r_eye_bot, l_eye_top, l_eye_bot,
     r_pupil, l_pupil,
@@ -147,11 +147,11 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const emeVal   = angleBetweenVectors(emeV1x, emeV1y, emeV2x, emeV2y);
   const emeIdeal  = { min: 45, max: 49 };
 
-  // 8. JFA — angle at jaw_apex (below chin) between lines from each gonion
-  const jfaV1x = gonia_r.x - jaw_apex.x;
-  const jfaV1y = gonia_r.y - jaw_apex.y;
-  const jfaV2x = gonia_l.x - jaw_apex.x;
-  const jfaV2y = gonia_l.y - jaw_apex.y;
+  // 8. JFA — angle at jaw_apex (below chin) between lines from each jaw point
+  const jfaV1x = jaw_r.x - jaw_apex.x;
+  const jfaV1y = jaw_r.y - jaw_apex.y;
+  const jfaV2x = jaw_l.x - jaw_apex.x;
+  const jfaV2y = jaw_l.y - jaw_apex.y;
   const jfaVal   = angleBetweenVectors(jfaV1x, jfaV1y, jfaV2x, jfaV2y);
   const jfaIdeal = { min: 88, max: 92 };
 
