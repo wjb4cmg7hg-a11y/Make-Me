@@ -77,13 +77,15 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
     jaw_r, jaw_l, chin, jaw_apex,
     r_eye_lat, r_eye_med, l_eye_lat, l_eye_med,
     r_eye_top, r_eye_bot, l_eye_top, l_eye_bot,
+    r_eyebrow_l, r_eyebrow_r, r_eyebrow_top, r_eyebrow_bot,
+    l_eyebrow_l, l_eyebrow_r, l_eyebrow_top, l_eyebrow_bot,
     r_pupil, l_pupil,
     alar_r, alar_l,
-    nose_w_r, nose_w_l,
-    subnasale,
+    nose_w_r, nose_w_l, subnasale,
+    nose_bridge_l, nose_bridge_r,
     upper_lip_top, lower_lip_bot,
-    mouth_r, mouth_l,
-    lip_center
+    mouth_r, mouth_l, lip_center,
+    neck_l, neck_r,
   } = kp;
 
   const bizygoWidth   = dist(zygo_r, zygo_l);
@@ -96,85 +98,72 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   const mouthWidth    = dist(mouth_r, mouth_l);
   const bigonialWidth = dist(gonia_r, gonia_l);
   const temporalWidth = dist(temporal_r, temporal_l);
+  const neckWidth = dist(neck_l, neck_r);
+  const totalFaceHeight = verticalDist(hairline, chin);
+  const fwhrMidfaceHeight = verticalDist(midpoint(r_eye_top, l_eye_top), upper_lip_top);
+  const midMidfaceHeight = verticalDist(midpoint(r_pupil, l_pupil), upper_lip_top);
+  const noseHeight = verticalDist(nasion, subnasale);
+  const nasionToChin = verticalDist(nasion, chin);
+  const philtrumHeight = verticalDist(subnasale, upper_lip_top);
 
-  const totalFaceHeight    = verticalDist(hairline, chin);
-  const hairlineToGlabella = verticalDist(hairline, glabella);
-  const fwhrMidfaceHeight  = verticalDist(midpoint(r_eye_top, l_eye_top), upper_lip_top);
-  const midMidfaceHeight   = verticalDist(midpoint(r_pupil, l_pupil), upper_lip_top);
-  const noseHeight         = verticalDist(nasion, subnasale);
-  const nasionToChin       = verticalDist(nasion, chin);
-  const philtrumHeight     = verticalDist(subnasale, upper_lip_top);
-
-  // 1. ESR
-  const esrVal   = (interpupilDist / bizygoWidth) * 100;
+  const esrVal = (interpupilDist / bizygoWidth) * 100;
   const esrIdeal = { min: 44.5, max: 47.75 };
 
-  // 2. Canthal Tilt
-  const rTilt     = canthalTilt(r_eye_med, r_eye_lat);
-  const lTilt     = canthalTilt(l_eye_med, l_eye_lat);
-  const canthalVal   = (rTilt + lTilt) / 2;
+  const rTilt = canthalTilt(r_eye_med, r_eye_lat);
+  const lTilt = canthalTilt(l_eye_med, l_eye_lat);
+  const canthalVal = (rTilt + lTilt) / 2;
   const canthalIdeal = { min: 5, max: 8.5 };
 
-  // 3. PFL to bizygo
-  const pflVal   = (eyeWidth / bizygoWidth) * 100;
+  const pflVal = (eyeWidth / bizygoWidth) * 100;
   const pflIdeal = { min: 19.5, max: 21.5 };
 
-  // 4. IAA — angle at subnasale between lines to lateral canthi
   const iaaV1x = r_eye_lat.x - subnasale.x;
   const iaaV1y = r_eye_lat.y - subnasale.y;
   const iaaV2x = l_eye_lat.x - subnasale.x;
   const iaaV2y = l_eye_lat.y - subnasale.y;
-  const iaaVal   = angleBetweenVectors(iaaV1x, iaaV1y, iaaV2x, iaaV2y);
+  const iaaVal = angleBetweenVectors(iaaV1x, iaaV1y, iaaV2x, iaaV2y);
   const iaaIdeal = { min: 85, max: 95 };
 
-  // 5. ICD
-  const icdVal   = eyeWidth / intercanthalDist;
+  const icdVal = eyeWidth / intercanthalDist;
   const icdIdeal = { min: 0.93, max: 1.05 };
 
-  // 6. Eye Aspect Ratio
-  const rEyeH  = dist(r_eye_top, r_eye_bot);
-  const lEyeH  = dist(l_eye_top, l_eye_bot);
-  const eyeH   = (rEyeH + lEyeH) / 2;
-  const earVal   = eyeWidth / eyeH;
+  const rEyeH = dist(r_eye_top, r_eye_bot);
+  const lEyeH = dist(l_eye_top, l_eye_bot);
+  const eyeH = (rEyeH + lEyeH) / 2;
+  const earVal = eyeWidth / eyeH;
   const earIdeal = { min: 3, max: 3.6 };
 
-  // 7. EME — angle at lip_center between lines to each pupil
   const emeV1x = r_pupil.x - lip_center.x;
   const emeV1y = r_pupil.y - lip_center.y;
   const emeV2x = l_pupil.x - lip_center.x;
   const emeV2y = l_pupil.y - lip_center.y;
-  const emeVal   = angleBetweenVectors(emeV1x, emeV1y, emeV2x, emeV2y);
-  const emeIdeal  = { min: 45, max: 49 };
+  const emeVal = angleBetweenVectors(emeV1x, emeV1y, emeV2x, emeV2y);
+  const emeIdeal = { min: 45, max: 49 };
 
-  // 8. JFA — angle at jaw_apex (below chin) between lines from each jaw point
   const jfaV1x = jaw_r.x - jaw_apex.x;
   const jfaV1y = jaw_r.y - jaw_apex.y;
   const jfaV2x = jaw_l.x - jaw_apex.x;
   const jfaV2y = jaw_l.y - jaw_apex.y;
-  const jfaVal   = angleBetweenVectors(jfaV1x, jfaV1y, jfaV2x, jfaV2y);
+  const jfaVal = angleBetweenVectors(jfaV1x, jfaV1y, jfaV2x, jfaV2y);
   const jfaIdeal = { min: 88, max: 92 };
 
-  // 9. Lower Full Face
-  const lffVal   = (nasionToChin / totalFaceHeight) * 100;
+  const lffVal = (nasionToChin / totalFaceHeight) * 100;
   const lffIdeal = { min: 67, max: 71 };
 
-  // 10. Jaw Width
-  const jawWidthVal   = bigonialWidth / bizygoWidth;
+  const jawWidthVal = bigonialWidth / bizygoWidth;
   const jawWidthIdeal = { min: 0.86, max: 0.92 };
 
-  // 11. Facial Thirds — use subnasale as divider between mid and lower
-  const upperThird = (hairlineToGlabella / totalFaceHeight) * 100;
-  const midThird   = (verticalDist(glabella, subnasale) / totalFaceHeight) * 100;
+  const upperThird = (verticalDist(hairline, glabella) / totalFaceHeight) * 100;
+  const midThird = (verticalDist(glabella, subnasale) / totalFaceHeight) * 100;
   const lowerThird = (verticalDist(subnasale, chin) / totalFaceHeight) * 100;
-  const thirdsVal  = (Math.abs(upperThird - 33) + Math.abs(midThird - 31) + Math.abs(lowerThird - 36)) / 3;
+  const thirdsVal = (Math.abs(upperThird - 33) + Math.abs(midThird - 31) + Math.abs(lowerThird - 36)) / 3;
   const thirdsIdeal = { min: 0, max: 2 };
 
-  // 12. Facial Fifths
-  const earToLatR  = dist(ear_r, r_eye_lat);
-  const earToLatL  = dist(ear_l, l_eye_lat);
+  const earToLatR = dist(ear_r, r_eye_lat);
+  const earToLatL = dist(ear_l, l_eye_lat);
   const totalWidth = earToLatR + rEyeWidth + intercanthalDist + lEyeWidth + earToLatL;
-  const fifth      = totalWidth / 5;
-  const fifthsVal  = (
+  const fifth = totalWidth / 5;
+  const fifthsVal = (
     Math.abs(earToLatR - fifth) +
     Math.abs(rEyeWidth - fifth) +
     Math.abs(intercanthalDist - fifth) +
@@ -183,56 +172,80 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
   ) / fifth * 100 / 5;
   const fifthsIdeal = { min: 0, max: 5 };
 
-  // 13. FWHR
-  const fwhrVal   = bizygoWidth / fwhrMidfaceHeight;
+  const fwhrVal = bizygoWidth / fwhrMidfaceHeight;
   const fwhrIdeal = { min: 1.9, max: 2.05 };
 
-  // 14. TFWHR
-  const tfwhrVal   = totalFaceHeight / bizygoWidth;
+  const tfwhrVal = totalFaceHeight / bizygoWidth;
   const tfwhrIdeal = { min: 1.33, max: 1.38 };
 
-  // 15. IAA:JFA
-  const iaaJfaVal   = Math.abs(iaaVal - jfaVal);
+  const iaaJfaVal = Math.abs(iaaVal - jfaVal);
   const iaaJfaIdeal = { min: 0, max: 3 };
 
-  // 16. Midface Ratio
-  const midfaceVal   = interpupilDist / midMidfaceHeight;
+  const midfaceVal = interpupilDist / midMidfaceHeight;
   const midfaceIdeal = { min: 0.96, max: 1.02 };
 
-  // 17. Nose H:W — use subnasale for nose height
-  const noseHWVal   = noseHeight / noseWidth;
+  const noseHWVal = noseHeight / noseWidth;
   const noseHWIdeal = { min: 1.44, max: 1.52 };
 
-  // 18. Nose to Bizygo
-  const noseBizygoVal   = bizygoWidth / noseWidth;
+  const noseBizygoVal = bizygoWidth / noseWidth;
   const noseBizygoIdeal = { min: 3.85, max: 4.15 };
 
-  // 19. Lower:Upper Lip
-  const upperLipH     = verticalDist(upper_lip_top, lip_center);
-  const lowerLipH     = verticalDist(lip_center, lower_lip_bot);
-  const lipRatioVal   = lowerLipH / upperLipH;
+  const upperLipH = verticalDist(upper_lip_top, lip_center);
+  const lowerLipH = verticalDist(lip_center, lower_lip_bot);
+  const lipRatioVal = lowerLipH / upperLipH;
   const lipRatioIdeal = { min: 1.4, max: 2 };
 
-  // 20. Chin to Philtrum — use subnasale for philtrum height
-  const chinToLowerLip     = verticalDist(lower_lip_bot, chin);
-  const chinToPhiltrumVal  = chinToLowerLip / philtrumHeight;
+  const chinToLowerLip = verticalDist(lower_lip_bot, chin);
+  const chinToPhiltrumVal = chinToLowerLip / philtrumHeight;
   const chinToPhiltrumIdeal = { min: 2.1, max: 2.75 };
 
-  // 21. Mouth to Bigonial
-  const mouthBigonialVal   = (mouthWidth / bigonialWidth) * 100;
+  const mouthBigonialVal = (mouthWidth / bigonialWidth) * 100;
   const mouthBigonialIdeal = { min: 40, max: 48 };
 
-  // 22. Mouth to Nose
-  const mouthNoseVal   = mouthWidth / noseWidth;
+  const mouthNoseVal = mouthWidth / noseWidth;
   const mouthNoseIdeal = { min: 1.45, max: 1.83 };
 
-  // 23. Bitemporal
-  const bitemporalVal   = (temporalWidth / bizygoWidth) * 100;
+  const bitemporalVal = (temporalWidth / bizygoWidth) * 100;
   const bitemporalIdeal = { min: 85, max: 95 };
 
-  // 24. Forehead Length — ideal is ~2x as wide as long
-  const foreheadLengthVal   = temporalWidth / hairlineToGlabella;
+  const foreheadLengthVal = temporalWidth / verticalDist(hairline, glabella);
   const foreheadLengthIdeal = { min: 1.85, max: 2.15 };
+
+  const lowerThirdVal = (verticalDist(subnasale, chin) / totalFaceHeight) * 100;
+  const lowerThirdIdeal = { min: 35.45, max: 35.45 };
+
+  const topThirdVal = (verticalDist(hairline, glabella) / totalFaceHeight) * 100;
+  const topThirdIdeal = { min: 31, max: 31 };
+
+  const middleThirdVal = (verticalDist(glabella, subnasale) / totalFaceHeight) * 100;
+  const middleThirdIdeal = { min: 32.4, max: 32.4 };
+
+  const cheekboneHeightVal = (1 - (verticalDist(l_pupil, zygo_l) / verticalDist(l_eye_top, nasion))) * 100;
+  const cheekboneHeightIdeal = { min: 91.5, max: 91.5 };
+
+  const eyebrowLowsetnessVal = verticalDist(l_eyebrow_bot, l_eye_top) / eyeWidth;
+  const eyebrowLowsetnessIdeal = { min: 0.25, max: 0.25 };
+
+  const browLengthToFaceWidthVal = dist(l_eyebrow_l, r_eyebrow_r) / bizygoWidth;
+  const browLengthToFaceWidthIdeal = { min: 0.75, max: 0.75 };
+
+  const eyebrowTiltVal = canthalTilt(l_eyebrow_l, l_eyebrow_r);
+  const eyebrowTiltIdeal = { min: 8.75, max: 8.75 };
+
+  const noseBridgeWidthToNoseHeightVal = dist(nose_bridge_l, nose_bridge_r) / noseHeight;
+  const noseBridgeWidthToNoseHeightIdeal = { min: 2.1, max: 2.1 };
+
+  const intercanthalToNoseWidthVal = intercanthalDist / noseWidth;
+  const intercanthalToNoseWidthIdeal = { min: 1.1, max: 1.1 };
+
+  const icdToMouthWidthRatioVal = intercanthalDist / mouthWidth;
+  const icdToMouthWidthRatioIdeal = { min: 0.85, max: 0.85 };
+
+  const lowerThirdProportionVal = verticalDist(subnasale, upper_lip_top) / verticalDist(subnasale, chin);
+  const lowerThirdProportionIdeal = { min: 32.25, max: 32.25 };
+
+  const neckWidthVal = neckWidth / bigonialWidth * 100;
+  const neckWidthIdeal = { min: 95, max: 95 };
 
   const raw: Array<{
     key: string; name: string; abbr: string; value: number;
@@ -262,6 +275,18 @@ export function computeRatios(kp: KeyPointPositions): RatioResult[] {
     { key: "mouthNose",  name: "Mouth to Nose",             abbr: "M:N",     value: mouthNoseVal,       ideal: mouthNoseIdeal,      unit: "×",     description: "Mouth width divided by nose width" },
     { key: "bitemporal", name: "Bitemporal Ratio",          abbr: "BT",      value: bitemporalVal,      ideal: bitemporalIdeal,     unit: "%",     description: "Temporal ridge width as % of bizygomatic width" },
     { key: "forehead",   name: "Forehead Length",           abbr: "FHL",     value: foreheadLengthVal,  ideal: foreheadLengthIdeal, unit: "×",     description: "Temporal width ÷ hairline-to-glabella height" },
+    { key: "lowerThird", name: "Lower Third",               abbr: "L3",      value: lowerThirdVal,      ideal: lowerThirdIdeal,     unit: "%",     description: "Chin to subnasal / chin to hairline" },
+    { key: "topThird", name: "Top Third",                 abbr: "T3",      value: topThirdVal,        ideal: topThirdIdeal,       unit: "%",     description: "Hairline to glabella / chin to hairline" },
+    { key: "middleThird", name: "Middle Third",             abbr: "M3",      value: middleThirdVal,     ideal: middleThirdIdeal,    unit: "%",     description: "Glabella to subnasal / chin to hairline" },
+    { key: "cheekboneHeight", name: "Cheekbone Height",         abbr: "CH",      value: cheekboneHeightVal, ideal: cheekboneHeightIdeal,unit: "%",     description: "(1 - (pupil height to Cheekbone Distance / Eye to Nose Base Distance)) * 100" },
+    { key: "eyebrowLowsetness", name: "Eyebrow Lowsetness",     abbr: "EL",      value: eyebrowLowsetnessVal, ideal: eyebrowLowsetnessIdeal, unit: "×",     description: "Eyebrow bottom to eye top / Total Eye Width" },
+    { key: "browLengthToFaceWidth", name: "Brow Length to Face Width", abbr: "BLFW",    value: browLengthToFaceWidthVal, ideal: browLengthToFaceWidthIdeal, unit: "×",     description: "Brow length / bizygomatic width" },
+    { key: "eyebrowTilt", name: "Eyebrow Tilt",             abbr: "ET",      value: eyebrowTiltVal,     ideal: eyebrowTiltIdeal,    unit: "°",     description: "Angle of eyebrow axis" },
+    { key: "noseBridgeWidthToNoseHeight", name: "Nose Bridge Width to Nose Height", abbr: "NBWNH", value: noseBridgeWidthToNoseHeightVal, ideal: noseBridgeWidthToNoseHeightIdeal, unit: "×",     description: "Nose bridge width / nose height" },
+    { key: "intercanthalToNoseWidth", name: "Intercanthal to Nose Width", abbr: "ICNW",    value: intercanthalToNoseWidthVal, ideal: intercanthalToNoseWidthIdeal, unit: "×",     description: "Intercanthal distance / nose width" },
+    { key: "icdToMouthWidthRatio", name: "ICD to Mouth Width Ratio", abbr: "IMWR",    value: icdToMouthWidthRatioVal, ideal: icdToMouthWidthRatioIdeal, unit: "×",     description: "Intercanthal distance / mouth width" },
+    { key: "lowerThirdProportion", name: "Lower Third Proportion",    abbr: "L3P",     value: lowerThirdProportionVal, ideal: lowerThirdProportionIdeal, unit: "%",     description: "Subnasal to upper lip / subnasal to chin" },
+    { key: "neckWidth", name: "Neck Width",               abbr: "NW",      value: neckWidthVal,       ideal: neckWidthIdeal,      unit: "%",     description: "Neck width / bigonial width" },
   ];
 
   return raw.map((r) => {

@@ -385,4 +385,175 @@ export const DIAGRAMS: Record<string, MeasurementDiagram> = {
       { text: "Forehead Height", role: "denominator" },
     ],
   },
+
+  lowerThird: {
+    lines: [
+      { from: "subnasale", to: "chin", color: "#ffab00" },
+      { from: "hairline", to: "chin", color: "#00c3ff" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "Lower Third", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Subnasale to Chin", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Hairline to Chin", role: "denominator" },
+    ],
+  },
+
+  topThird: {
+    lines: [
+      { from: "hairline", to: "glabella", color: "#ffab00" },
+      { from: "hairline", to: "chin", color: "#00c3ff" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "Top Third", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Hairline to Glabella", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Hairline to Chin", role: "denominator" },
+    ],
+  },
+
+  middleThird: {
+    lines: [
+      { from: "glabella", to: "subnasale", color: "#ffab00" },
+      { from: "hairline", to: "chin", color: "#00c3ff" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "Middle Third", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Glabella to Subnasale", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Hairline to Chin", role: "denominator" },
+    ],
+  },
+
+  cheekboneHeight: {
+    lines: [
+      { from: "l_pupil", to: "zygo_l", color: "#ffab00", dashed: true },
+      { from: "l_eye_top", to: "nasion", color: "#00c3ff", dashed: true },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "Cheekbone Height", role: "label" },
+    ],
+  },
+
+  eyebrowLowsetness: {
+    lines: [
+      { from: "l_eyebrow_bot", to: "l_eye_top", color: "#ffab00" },
+      { from: "l_eye_lat", to: "l_eye_med", color: "#00c3ff" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "Eyebrow Lowsetness", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Eyebrow to Eye", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Eye Width", role: "denominator" },
+    ],
+  },
+
+  browLengthToFaceWidth: {
+    lines: [
+      { from: "l_eyebrow_l", to: "r_eyebrow_r", color: "#ffab00" },
+      { from: "zygo_l", to: "zygo_r", color: "#00c3ff" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "Brow Length to Face Width", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Brow Length", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Face Width", role: "denominator" },
+    ],
+  },
+
+  eyebrowTilt: {
+    lines: [
+      { from: "l_eyebrow_l", to: "l_eyebrow_r", color: "#ee82ee" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "Eyebrow Tilt", role: "label" },
+    ],
+  },
+
+  noseBridgeWidthToNoseHeight: {
+    lines: [
+      { from: "nose_bridge_l", to: "nose_bridge_r", color: "#ffab00" },
+      { from: "nasion", to: "subnasale", color: "#00c3ff" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "Nose Bridge Width to Nose Height", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Nose Bridge Width", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Nose Height", role: "denominator" },
+    ],
+  },
+
+  intercanthalToNoseWidth: {
+    lines: [
+      { from: "l_eye_med", to: "r_eye_med", color: "#ffab00" },
+      { from: "nose_w_l", to: "nose_w_r", color: "#00c3ff" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "Intercanthal to Nose Width", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Intercanthal Width", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Nose Width", role: "denominator" },
+    ],
+  },
+
+  icdToMouthWidthRatio: {
+    lines: [
+      { from: "l_eye_med", to: "r_eye_med", color: "#ffab00" },
+      { from: "mouth_l", to: "mouth_r", color: "#00c3ff" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "ICD to Mouth Width Ratio", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Intercanthal Width", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Mouth Width", role: "denominator" },
+    ],
+  },
+
+  lowerThirdProportion: {
+    lines: [
+      { from: "subnasale", to: "upper_lip_top", color: "#ffab00" },
+      { from: "subnasale", to: "chin", color: "#00c3ff" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "Lower Third Proportion", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Subnasale to Upper Lip", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Subnasale to Chin", role: "denominator" },
+    ],
+  },
+
+  neckWidth: {
+    lines: [
+      { from: "neck_l", to: "neck_r", color: "#ffab00" },
+      { from: "gonia_l", to: "gonia_r", color: "#00c3ff" },
+    ],
+    angles: [],
+    formulaParts: [
+      { text: "Neck Width", role: "label" },
+      { text: "=", role: "operator" },
+      { text: "Neck Width", role: "numerator" },
+      { text: "/", role: "operator" },
+      { text: "Bigonial Width", role: "denominator" },
+    ],
+  },
 };
