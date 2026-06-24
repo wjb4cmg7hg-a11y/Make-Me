@@ -195,7 +195,7 @@ export function extractKeyPoints(
     mouth_l:       get(LM.MOUTH_L),
     lip_center:    get(13),
 
-    neck_l:        { x: gonia_l.x - 20, y: gonia_l.y + 20 },
-    neck_r:        { x: gonia_r.x + 20, y: gonia_r.y + 20 },
+    neck_l:        { x: gonia_l.x, y: gonia_l.y + 10 },
+    neck_r:        { x: gonia_r.x, y: gonia_r.y + 10 },
   };
 }
